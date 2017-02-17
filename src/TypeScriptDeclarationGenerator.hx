@@ -38,9 +38,23 @@ class TypeScriptDeclarationGenerator {
         var parts = [];
         parts.push('declare class ${cl.name} {');
 
+        inline function addDoc(doc:String) {
+            if (doc != null) {
+                parts.push("\t/**");
+                var lines = doc.split("\n");
+                for (line in lines) {
+                    line = line.trim();
+                    if (line.length > 0)
+                        parts.push('\t * $line');
+                }
+                parts.push("\t */");
+            }
+        }
+
         if (cl.constructor != null) {
             var ctor = cl.constructor.get();
             if (ctor.isPublic)
+                addDoc(ctor.doc);
                 switch (ctor.type) {
                     case TFun(args, _):
                         var args = args.map(convertArg);
@@ -49,27 +63,36 @@ class TypeScriptDeclarationGenerator {
                 }
         }
 
-        for (field in cl.statics.get()) {
+        inline function addField(field:ClassField, isStatic:Bool) {
             if (field.isPublic) {
-                if (field.doc != null) {
-                    parts.push("\t/**");
-                    var lines = field.doc.split("\n");
-                    for (line in lines) {
-                        line = line.trim();
-                        if (line.length > 0)
-                            parts.push('\t\t$line');
-                    }
-                    parts.push("\t*/");
-                }
+                addDoc(field.doc);
 
-                switch (field.type) {
-                    case TFun(args, ret):
+                var prefix = if (isStatic) "static " else "";
+
+                switch [field.kind, field.type] {
+                    case [FMethod(_), TFun(args, ret)]:
                         var args = args.map(convertArg);
-                        parts.push('\tstatic ${field.name}(${args.join(", ")}): ${convertTypeRef(ret)};');
+                        parts.push('\t$prefix${field.name}(${args.join(", ")}): ${convertTypeRef(ret)};');
+
+                    case [FVar(_,write), _]:
+                        switch (write) {
+                            case AccNo|AccNever:
+                                prefix += "readonly ";
+                            default:
+                        }
+                        parts.push('\t$prefix${field.name}: ${convertTypeRef(field.type)};');
 
                     default:
                 }
             }
+        }
+
+        for (field in cl.fields.get()) {
+            addField(field, false);
+        }
+
+        for (field in cl.statics.get()) {
+            addField(field, true);
         }
 
         parts.push('}');
