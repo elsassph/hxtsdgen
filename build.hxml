@@ -1,0 +1,5 @@
+-cp src
+Main
+-js main.js
+-D use-rtti-doc
+--macro TypeScriptDeclarationGenerator.use()
