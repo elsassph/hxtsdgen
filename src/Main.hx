@@ -1,4 +1,21 @@
+
+/**
+hi
+**/
+@:expose("ns.some")
+class Some {
+    /**hi**/
+    public function new() {}
+
+    public static function f() {}
+}
+
+
+
 @:expose
+/**
+    this is a class
+**/
 class Main {
     /** ctor doc **/
     public function new(name:String, level:Int) {
@@ -16,9 +33,30 @@ class Main {
     public var b4(default,never):Int;
 
     /**
+        Do cool stuff
+    **/
+    public function some(a:Int, b:Main):String {
+        return "";
+    }
+
+    /**
         Some doc
     **/
     public static function doStuff(debug:Bool):String {
         return "";
     }
+
+    /**hi**/
+    @:expose("a.b.c")
+    static function f() return 1;
+
+    /**bye**/
+    @:expose
+    static function g() return 1;
+
+    /**bye**/
+    @:expose("some")
+    static function h() return 1;
+
+    static var i = 5;
 }
