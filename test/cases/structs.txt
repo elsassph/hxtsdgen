@@ -1,9 +1,9 @@
 class C {
     @:expose("f")
-    public static function f():{a:Int, ?b:Array<String>}
+    public static function f():{a:Int, ?b:{f:Bool}}
         return null;
 }
 
 ----
 
-export function f(): {a: number, b?: string[]};
+export function f(): {a: number, b?: {f: boolean}};

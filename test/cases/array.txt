@@ -1,0 +1,8 @@
+class C {
+    @:expose("f")
+    public static function f() return ["hi", "bye"];
+}
+
+----
+
+export function f(): string[];
