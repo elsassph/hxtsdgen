@@ -1,5 +1,7 @@
 # TypeScript Declaration Generator for Haxe/JS
 
+[![Build Status](https://travis-ci.org/nadako/hxtsdgen.svg?branch=master)](https://travis-ci.org/nadako/hxtsdgen)
+
 **STATUS: WORK IN PROGRESS, CONTRIBUTIONS WELCOME**
 
 This is a [TypeScript declaration file](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
