@@ -8,7 +8,8 @@ class Main {
     static function main() {
         var programDir = haxe.io.Path.directory(Sys.programPath());
         var total = 0, failed = 0;
-        for (file in FileSystem.readDirectory('$programDir/cases')) {
+
+        function processFile(file) {
             total++;
             println('Running test case `$file`...');
             var testCase = readTestCase('$programDir/cases/$file');
@@ -23,6 +24,15 @@ class Main {
                 failed++;
             }
         }
+
+        var fileName = Sys.args()[0];
+        if (fileName != null) {
+            processFile(fileName);
+        } else {
+            for (file in FileSystem.readDirectory('$programDir/cases'))
+                processFile(file);
+        }
+
         println('Result: $total. Failed: $failed.');
         Sys.exit(if (failed > 0) 1 else 0);
     }
