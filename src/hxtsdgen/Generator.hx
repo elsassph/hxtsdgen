@@ -139,6 +139,8 @@ class Generator {
             if (cl.doc != null)
                 parts.push(renderDoc(cl.doc, indent));
 
+            // TODO: maybe it's a good idea to output all-static class that is not referenced
+            // elsewhere as a namespace for TypeScript
             var tparams = renderTypeParams(cl.params);
             parts.push('$indent${if (indent == "") "export " else ""}class $name$tparams {');
 
