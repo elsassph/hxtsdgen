@@ -1,0 +1,4 @@
+-cp test
+-js test/main.js
+-lib hxtsdgen
+Main

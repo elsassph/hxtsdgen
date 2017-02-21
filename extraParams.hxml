@@ -1,0 +1,2 @@
+--macro hxtsdgen.Generator.use()
+-D use-rtti-doc
