@@ -1,0 +1,4 @@
+-cp src
+--macro include("hxtsdgen")
+-neko main.n
+--no-output
