@@ -70,7 +70,7 @@ class TypeScriptDeclarationGenerator {
         return if (exposedPath.length == 0)
             fn(name, "");
         else
-            'declare namespace ${exposedPath.join(".")} {\n${fn(name, "\t")}\n}';
+            'export namespace ${exposedPath.join(".")} {\n${fn(name, "\t")}\n}';
     }
 
     static function renderDoc(doc:String, indent:String):String {
@@ -100,7 +100,7 @@ class TypeScriptDeclarationGenerator {
                 case [FMethod(_), TFun(args, ret)]:
                     var prefix =
                         if (indent == "") // so we're not in a namespace (meh, this is hacky)
-                            "declare function "
+                            "export function "
                         else
                             "function ";
                     parts.push(renderFunction(name, args, ret, f.params, indent, prefix));
@@ -136,7 +136,7 @@ class TypeScriptDeclarationGenerator {
                 parts.push(renderDoc(cl.doc, indent));
 
             var tparams = renderTypeParams(cl.params);
-            parts.push('$indent${if (indent == "") "declare " else ""}class $name$tparams {');
+            parts.push('$indent${if (indent == "") "export " else ""}class $name$tparams {');
 
             {
                 var indent = indent + "\t";

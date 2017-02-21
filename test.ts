@@ -1,3 +1,3 @@
-/// <reference path="main.d.ts" />
+import { a } from "./main";
 
-Main.v3 = 5;
+console.log(a.b.c());
