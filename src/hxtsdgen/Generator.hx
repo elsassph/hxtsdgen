@@ -117,9 +117,8 @@ class Generator {
     }
 
     static function renderFunction(name:String, args:Array<{name:String, opt:Bool, t:Type}>, ret:Type, params:Array<TypeParameter>, indent:String, prefix:String):String {
-        var args = args.map(convertArg);
         var tparams = renderTypeParams(params);
-        return '$indent$prefix$name$tparams(${args.join(", ")}): ${convertTypeRef(ret)};';
+        return '$indent$prefix$name$tparams(${renderArgs(args)}): ${convertTypeRef(ret)};';
     }
 
     static function renderTypeParams(params:Array<TypeParameter>):String {
@@ -154,8 +153,7 @@ class Generator {
                             parts.push(renderDoc(ctor.doc, indent));
                         switch (ctor.type) {
                             case TFun(args, _):
-                                var args = args.map(convertArg);
-                                parts.push('${indent}constructor(${args.join(", ")});');
+                                parts.push('${indent}constructor(${renderArgs(args)});');
                             default:
                                 throw "wtf";
                         }
@@ -199,11 +197,30 @@ class Generator {
         });
     }
 
-    static function convertArg(arg:{name:String, opt:Bool, t:Type}):String {
-        var argString = arg.name;
-        if (arg.opt) argString += "?";
-        argString += ": " + convertTypeRef(arg.t);
-        return argString;
+    static function renderArgs(args:Array<{name:String, opt:Bool, t:Type}>):String {
+        // here we handle haxe's crazy argument skipping:
+        // we allow trailing optional args, but if there's non-optional
+        // args after the optional ones, we consider them non-optional for TS
+        var noOptionalUntil = 0;
+        var hadOptional = true;
+        for (i in 0...args.length) {
+            var arg = args[i];
+            if (arg.opt) {
+                hadOptional = true;
+            } else if (hadOptional && !arg.opt) {
+                noOptionalUntil = i;
+                hadOptional = false;
+            }
+        }
+
+        var tsArgs = [];
+        for (i in 0...args.length) {
+            var arg = args[i];
+            var name = if (arg.name != "") arg.name else 'arg$i';
+            var opt = if (arg.opt && i > noOptionalUntil) "?" else "";
+            tsArgs.push('$name$opt: ${convertTypeRef(arg.t)}');
+        }
+        return tsArgs.join(", ");
     }
 
     static function convertTypeRef(t:Type):String {
@@ -260,29 +277,7 @@ class Generator {
                 }
 
             case TFun(args, ret):
-                // here we handle haxe's crazy argument skipping:
-                // we allow trailing optional args, but if there's non-optional
-                // args after the optional ones, we consider them non-optional for TS
-                var noOptionalUntil = 0;
-                var hadOptional = true;
-                for (i in 0...args.length) {
-                    var arg = args[i];
-                    if (arg.opt) {
-                        hadOptional = true;
-                    } else if (hadOptional && !arg.opt) {
-                        noOptionalUntil = i;
-                        hadOptional = false;
-                    }
-                }
-
-                var tsArgs = [];
-                for (i in 0...args.length) {
-                    var arg = args[i];
-                    var name = if (arg.name != "") arg.name else 'arg$i';
-                    var opt = if (arg.opt && i > noOptionalUntil) "?" else "";
-                    tsArgs.push('$name$opt: ${convertTypeRef(arg.t)}');
-                }
-                '(${tsArgs.join(", ")}) => ${convertTypeRef(ret)}';
+                '(${renderArgs(args)}) => ${convertTypeRef(ret)}';
 
             default:
                 throw 'Cannot convert type ${t.toString()} to TypeScript declaration (TODO?)';

@@ -1,0 +1,16 @@
+@:expose
+class C {
+    public static function f() {}
+    public static function f2(a:String, ?b:Int):Int return 1;
+    public static function f3(a:String, ?b:Int, c:String) {}
+    public static function f4(a:String, ?b:Int, c:String, ?d:Bool) {}
+}
+
+----
+
+export class C {
+	static f(): void;
+	static f2(a: string, b?: number): number;
+	static f3(a: string, b: number, c: string): void;
+	static f4(a: string, b: number, c: string, d?: boolean): void;
+}
