@@ -264,7 +264,8 @@ class Generator {
                 for (i in 0...args.length) {
                     var arg = args[i];
                     var name = if (arg.name != "") arg.name else 'arg$i';
-                    tsArgs.push('$name: ${convertTypeRef(arg.t)}');
+                    var opt = if (arg.opt) "?" else "";
+                    tsArgs.push('$name$opt: ${convertTypeRef(arg.t)}');
                 }
                 '(${tsArgs.join(", ")}) => ${convertTypeRef(ret)}';
 
