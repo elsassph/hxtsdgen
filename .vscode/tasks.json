@@ -1,7 +1,7 @@
 {
     "version": "0.1.0",
     "command": "haxe",
-    "args": ["test/build.hxml"],
+    "args": ["test.hxml", "-cmd", "node test"],
     "problemMatcher": {
         "owner": "haxe",
         "pattern": {

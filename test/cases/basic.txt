@@ -1,0 +1,10 @@
+@:expose
+class C {
+	public function new() {}
+}
+
+----
+
+export class C {
+	constructor();
+}

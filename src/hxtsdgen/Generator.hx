@@ -42,7 +42,9 @@ class Generator {
                 sys.io.File.saveContent(outDTS, HEADER + "\n\n// No types were @:expose'd.\n// Read more at http://haxe.org/manual/target-javascript-expose.html");
             } else {
                 Context.onAfterGenerate(function() {
-                    var declarations = [HEADER];
+                    var declarations = [];
+                    if (!Context.defined("hxtsdgen-skip-header"))
+                        declarations.push(HEADER);
                     for (e in exposed) {
                         switch (e) {
                             case EClass(cl):

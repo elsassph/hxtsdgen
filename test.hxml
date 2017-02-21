@@ -1,0 +1,4 @@
+-cp test
+-main Main
+-lib hxnodejs
+-js test/index.js

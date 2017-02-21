@@ -1,66 +1,54 @@
-@:expose
-class C<A,B> {
-    public function f<T>(v:A):B return null;
-}
+import Sys.println;
+import js.node.Os;
+import sys.FileSystem;
+import sys.io.File;
+using StringTools;
 
-/**
-hi
-**/
-@:expose("ns.some")
-class Some {
-    /**hi**/
-    public function new() {}
-
-    public static function f() {}
-}
-
-
-
-@:expose
-/**
-    this is a class
-**/
 class Main {
-    /** ctor doc **/
-    public function new(name:String, level:Int) {
-        trace("hi");
+    static function main() {
+        var programDir = haxe.io.Path.directory(Sys.programPath());
+        var total = 0, failed = 0;
+        for (file in FileSystem.readDirectory('$programDir/cases')) {
+            total++;
+            println('Running test case `$file`...');
+            var testCase = readTestCase('$programDir/cases/$file');
+            var tsOut = runTestCase(testCase.hx);
+            if (testCase.ts != tsOut) {
+                println("Output is different!");
+                println('Expected:\n${testCase.ts}');
+                println('\n---\nActual:\n${tsOut}');
+                failed++;
+            }
+        }
+        println('Result: $total. Failed: $failed.');
+        Sys.exit(if (failed > 0) 1 else 0);
     }
 
-    public static var v1:Int;
-    public static var v2(default,default):Int;
-    public static var v3(default,null):Int;
-    public static var v4(default,never):Int;
-
-    public var b1:Int;
-    public var b2(default,default):Int;
-    public var b3(default,null):Int;
-    public var b4(default,never):Int;
-
-    /**
-        Do cool stuff
-    **/
-    public function some(a:Int, b:Main):String {
-        return "";
+    static function readTestCase(path) {
+        var testCase = File.getContent(path).replace("\r\n", "\n");
+        var parts = testCase.split("\n\n----\n\n");
+        if (parts.length != 2)
+            throw 'Test case $path format is wrong!';
+        return {hx: parts[0], ts: parts[1].trim()};
     }
 
-    /**
-        Some doc
-    **/
-    public static function doStuff(debug:Bool):String {
-        return "";
+    static function runTestCase(hxCode) {
+        var cp = Os.tmpdir();
+        var hxFile = '$cp/HxTsdGenTestCase.hx';
+        var outFile = '$cp/HxTsdGenTestCase.js';
+        var tsdFile = '$cp/HxTsdGenTestCase.d.ts';
+        File.saveContent(hxFile, hxCode);
+        Sys.command("haxe", [
+            "-cp", cp,
+            "-lib", "hxtsdgen",
+            "-js", outFile,
+            "-D", "hxtsdgen-skip-header",
+            "HxTsdGenTestCase"
+        ]);
+        var tsd = File.getContent(tsdFile).trim();
+        FileSystem.deleteFile(hxFile);
+        FileSystem.deleteFile(outFile);
+        FileSystem.deleteFile(tsdFile);
+        return tsd;
     }
-
-    /**hi**/
-    @:expose("a.b.c")
-    static function f() return 1;
-
-    /**bye**/
-    @:expose
-    static function g() return 1;
-
-    /**bye**/
-    @:expose("some")
-    static function h() return 1;
-
-    static var i = 5;
 }
