@@ -1,4 +1,5 @@
 {
+    "haxe.enableDiagnostics": false,
     "haxe.displayConfigurations": [
         ["complete.hxml"]
     ]
