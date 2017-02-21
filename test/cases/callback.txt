@@ -2,6 +2,8 @@
 class C {
     public static function f(cb:Void->Void) {}
     public static function f2(cb:String->?Int->Int) {}
+    public static function f3(cb:String->?Int->String->Void) {}
+    public static function f4(cb:String->?Int->String->?Bool->Void) {}
 }
 
 ----
@@ -9,4 +11,6 @@ class C {
 export class C {
 	static f(cb: () => void): void;
 	static f2(cb: (arg0: string, arg1?: number) => number): void;
+	static f3(cb: (arg0: string, arg1: number, arg2: string) => void): void;
+	static f4(cb: (arg0: string, arg1: number, arg2: string, arg3?: boolean) => void): void;
 }
