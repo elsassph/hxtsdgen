@@ -94,7 +94,7 @@ class TypeScriptDeclarationGenerator {
                             "declare function "
                         else
                             "function ";
-                    parts.push(renderFunction(name, args, ret, indent, prefix));
+                    parts.push(renderFunction(name, args, ret, f.params, indent, prefix));
                 default:
                     throw new Error("This kind of field cannot be exposed to JavaScript", f.pos);
             }
@@ -103,9 +103,16 @@ class TypeScriptDeclarationGenerator {
         });
     }
 
-    static function renderFunction(name:String, args:Array<{name:String, opt:Bool, t:Type}>, ret:Type, indent:String, prefix:String):String {
+    static function renderFunction(name:String, args:Array<{name:String, opt:Bool, t:Type}>, ret:Type, params:Array<TypeParameter>, indent:String, prefix:String):String {
         var args = args.map(convertArg);
-        return '$indent$prefix$name(${args.join(", ")}): ${convertTypeRef(ret)};';
+        var tparams = renderTypeParams(params);
+        return '$indent$prefix$name$tparams(${args.join(", ")}): ${convertTypeRef(ret)};';
+    }
+
+    static function renderTypeParams(params:Array<TypeParameter>):String {
+        return
+            if (params.length == 0) ""
+            else "<" + params.map(function(t) return return t.name).join(", ") + ">";
     }
 
     static function generateClassDeclaration(cl:ClassType):String {
@@ -116,8 +123,11 @@ class TypeScriptDeclarationGenerator {
         return wrapInNamespace(exposePath, function(name, indent) {
             var parts = [];
 
-            if (cl.doc != null) parts.push(renderDoc(cl.doc, indent));
-            parts.push('$indent${if (indent == "") "declare " else ""}class $name {');
+            if (cl.doc != null)
+                parts.push(renderDoc(cl.doc, indent));
+
+            var tparams = renderTypeParams(cl.params);
+            parts.push('$indent${if (indent == "") "declare " else ""}class $name$tparams {');
 
             {
                 var indent = indent + "\t";
@@ -145,7 +155,7 @@ class TypeScriptDeclarationGenerator {
 
                         switch [field.kind, field.type] {
                             case [FMethod(_), TFun(args, ret)]:
-                                parts.push(renderFunction(field.name, args, ret, indent, prefix));
+                                parts.push(renderFunction(field.name, args, ret, field.params, indent, prefix));
 
                             case [FVar(_,write), _]:
                                 switch (write) {
@@ -182,12 +192,19 @@ class TypeScriptDeclarationGenerator {
     }
 
     static function convertTypeRef(t:Type):String {
-        return switch (t.followWithAbstracts().toString()) {
+        var t = t.followWithAbstracts();
+        return switch (t.toString()) {
             case "String": "string";
             case "Int" | "Float": "number";
             case "Bool": "boolean";
             case "Void": "void";
-            case other: other;
+            case other:
+                switch (t) {
+                    case TInst(_.get() => {name: name, kind: KTypeParameter(_)}, _):
+                        name;
+                    default:
+                        other;
+                }
         }
     }
 }

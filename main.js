@@ -4,6 +4,12 @@ $hx_exports["Main"] = $hx_exports["Main"] || {};
 $hx_exports["a"] = $hx_exports["a"] || {};
 $hx_exports["a"]["b"] = $hx_exports["a"]["b"] || {};
 $hx_exports["ns"] = $hx_exports["ns"] || {};
+var C = $hx_exports["C"] = function() { };
+C.prototype = {
+	f: function(v) {
+		return null;
+	}
+};
 var Some = $hx_exports["ns"]["some"] = function() {
 };
 Some.f = function() {

@@ -1,3 +1,7 @@
+@:expose
+class C<A,B> {
+    public function f<T>(v:A):B return null;
+}
 
 /**
 hi
