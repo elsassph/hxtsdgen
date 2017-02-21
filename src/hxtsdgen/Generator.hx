@@ -215,6 +215,13 @@ class Generator {
                         name;
                     case TInst(_.get() => {pack: [], name: "Array"}, [elemT]):
                         convertTypeRef(elemT) + "[]";
+                    case TAnonymous(_.get() => anon):
+                        var fields = [];
+                        for (field in anon.fields) {
+                            var opt = if (field.meta.has(":optional")) "?" else "";
+                            fields.push('${field.name}$opt: ${convertTypeRef(field.type)}');
+                        }
+                        '{${fields.join(", ")}}';
                     default:
                         other;
                 }
