@@ -1,0 +1,9 @@
+class C {
+    @:expose("f")
+    public static function f():{a:Int, ?b:Array<String>}
+        return null;
+}
+
+----
+
+export function f(): {a: number, b?: string[]};
