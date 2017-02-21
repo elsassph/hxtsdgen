@@ -213,6 +213,8 @@ class Generator {
                 switch (t) {
                     case TInst(_.get() => {name: name, kind: KTypeParameter(_)}, _):
                         name;
+                    case TInst(_.get() => {pack: [], name: "Array"}, [elemT]):
+                        convertTypeRef(elemT) + "[]";
                     default:
                         other;
                 }
