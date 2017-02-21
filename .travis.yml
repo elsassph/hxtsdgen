@@ -4,6 +4,9 @@ sudo: false
 haxe:
 - 3.4.0
 
+node_js:
+- 4
+
 install:
 - haxelib install hxnodejs
 - haxelib dev hxtsdgen .
