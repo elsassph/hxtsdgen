@@ -1,0 +1,6 @@
+class C {} // no exposes
+
+----
+
+// No types were @:expose'd.
+// Read more at http://haxe.org/manual/target-javascript-expose.html
