@@ -17,12 +17,11 @@ Just add `-lib hxtsdgen` to compiler arguments and it'll do the rest.
 ## Why?
 
 To make using Haxe/JS modules from both JavaScript and TypeScript much easier, of course!
-Just compile a haxe library as a JS module and be able to use it in TypeScript in a perfectly
-typed way.
+Just compile your Haxe library to a JS module and use it in TypeScript in a perfectly typed way.
 
-You may ask, how is plain JavaScript involved here? Well, the thing is, modern JavaScript editors
+You may ask, how does plain JavaScript benefit here? Well, the thing is, modern JavaScript editors
 such as VS Code and (I think) IDEA, can download and use TypeScript "typings" for providing hints
-while editing pure-js code.
+while editing JavaScript code.
 
 ## Early screenshot:
 
