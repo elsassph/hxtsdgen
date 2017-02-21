@@ -257,6 +257,15 @@ class Generator {
                         convertTypeRef(dt.type.applyTypeParameters(dt.params, params));
                 }
 
+            case TFun(args, ret):
+                var tsArgs = [];
+                for (i in 0...args.length) {
+                    var arg = args[i];
+                    var name = if (arg.name != "") arg.name else 'arg$i';
+                    tsArgs.push('$name: ${convertTypeRef(arg.t)}');
+                }
+                '(${tsArgs.join(", ")}) => ${convertTypeRef(ret)}';
+
             default:
                 throw 'Cannot convert type ${t.toString()} to TypeScript declaration (TODO?)';
         }
