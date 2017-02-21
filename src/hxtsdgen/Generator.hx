@@ -203,28 +203,60 @@ class Generator {
     }
 
     static function convertTypeRef(t:Type):String {
-        var t = t.followWithAbstracts();
-        return switch (t.toString()) {
-            case "String": "string";
-            case "Int" | "Float": "number";
-            case "Bool": "boolean";
-            case "Void": "void";
-            case other:
-                switch (t) {
-                    case TInst(_.get() => {name: name, kind: KTypeParameter(_)}, _):
-                        name;
-                    case TInst(_.get() => {pack: [], name: "Array"}, [elemT]):
+        return switch (t) {
+            case TInst(_.get() => cl, params):
+                switch [cl, params] {
+                    case [{pack: [], name: "String"}, _]:
+                        "string";
+
+                    case [{pack: [], name: "Array"}, [elemT]]:
                         convertTypeRef(elemT) + "[]";
-                    case TAnonymous(_.get() => anon):
-                        var fields = [];
-                        for (field in anon.fields) {
-                            var opt = if (field.meta.has(":optional")) "?" else "";
-                            fields.push('${field.name}$opt: ${convertTypeRef(field.type)}');
-                        }
-                        '{${fields.join(", ")}}';
+
+                    case [{name: name, kind: KTypeParameter(_)}, _]:
+                        name;
+
                     default:
-                        other;
+                        // TODO: handle @:expose'd paths
+                        haxe.macro.MacroStringTools.toDotPath(cl.pack, cl.name);
                 }
+
+            case TAbstract(_.get() => ab, params):
+                switch [ab, params] {
+                    case [{pack: [], name: "Int" | "Float"}, _]:
+                        "number";
+
+                    case [{pack: [], name: "Bool"}, _]:
+                        "boolean";
+
+                    case [{pack: [], name: "Void"}, _]:
+                        "void";
+
+                    default:
+                        // TODO: do we want to have a `type Name = Underlying` here maybe?
+                        convertTypeRef(ab.type.applyTypeParameters(ab.params, params));
+                }
+
+            case TAnonymous(_.get() => anon):
+                var fields = [];
+                for (field in anon.fields) {
+                    var opt = if (field.meta.has(":optional")) "?" else "";
+                    fields.push('${field.name}$opt: ${convertTypeRef(field.type)}');
+                }
+                '{${fields.join(", ")}}';
+
+            case TType(_.get() => dt, params):
+                switch [dt, params] {
+                    case [{pack: [], name: "Null"}, [realT]]:
+                        // TODO: generate `| null` union unless it comes from an optional field?
+                        convertTypeRef(realT);
+
+                    default:
+                        // TODO: generate TS interface declarations
+                        convertTypeRef(dt.type.applyTypeParameters(dt.params, params));
+                }
+
+            default:
+                throw 'Cannot convert type ${t.toString()} to TypeScript declaration (TODO?)';
         }
     }
 }
