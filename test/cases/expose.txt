@@ -1,0 +1,42 @@
+@:expose
+class C {}
+
+@:expose("some")
+class D {}
+
+@:expose("my.pack.A")
+class E {}
+
+class F {
+	@:expose
+	static function f() {}
+
+	@:expose("g")
+	static function g() {}
+
+	@:expose("my.pack.h")
+	static function h() {}
+}
+
+----
+
+export class C {
+}
+
+export class some {
+}
+
+export namespace my.pack {
+	class A {
+	}
+}
+
+export namespace F {
+	function f(): void;
+}
+
+export function g(): void;
+
+export namespace my.pack {
+	function h(): void;
+}
