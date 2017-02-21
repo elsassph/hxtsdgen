@@ -1,0 +1,13 @@
+language: haxe
+sudo: false
+
+haxe:
+- 3.4.0
+
+install:
+- haxelib install hxnodejs
+- haxelib dev hxtsdgen .
+
+script:
+- haxe test.hxml
+- node test
