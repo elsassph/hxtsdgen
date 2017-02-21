@@ -13,7 +13,10 @@ class Main {
             println('Running test case `$file`...');
             var testCase = readTestCase('$programDir/cases/$file');
             var tsOut = runTestCase(testCase.hx);
-            if (testCase.ts != tsOut) {
+            if (tsOut == null) {
+                println("Haxe compilation failed!");
+                failed++;
+            } else if (testCase.ts != tsOut) {
                 println("Output is different!");
                 println('Expected:\n${testCase.ts}');
                 println('\n---\nActual:\n${tsOut}');
@@ -38,17 +41,23 @@ class Main {
         var outFile = '$cp/HxTsdGenTestCase.js';
         var tsdFile = '$cp/HxTsdGenTestCase.d.ts';
         File.saveContent(hxFile, hxCode);
-        Sys.command("haxe", [
+
+        var code = Sys.command("haxe", [
             "-cp", cp,
             "-lib", "hxtsdgen",
             "-js", outFile,
             "-D", "hxtsdgen-skip-header",
             "HxTsdGenTestCase"
         ]);
-        var tsd = File.getContent(tsdFile).trim();
-        FileSystem.deleteFile(hxFile);
-        FileSystem.deleteFile(outFile);
-        FileSystem.deleteFile(tsdFile);
+
+        var tsd = if (code == 0) File.getContent(tsdFile).trim() else null;
+
+        try {
+            FileSystem.deleteFile(hxFile);
+            FileSystem.deleteFile(outFile);
+            FileSystem.deleteFile(tsdFile);
+        } catch (_:Any) {}
+
         return tsd;
     }
 }
