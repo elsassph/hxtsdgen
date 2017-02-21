@@ -1,0 +1,71 @@
+/**
+    C doc
+**/
+@:expose
+class C {
+    /**
+        C.new doc
+    **/
+    public function new() {}
+
+    /**
+        C.f doc
+    **/
+    public var v:Int;
+
+    /**
+        C.sv doc
+    **/
+    public static var sv:Int;
+
+    /**
+        C.f doc
+    **/
+    public function f() {}
+
+    /**
+        C.sf doc
+    **/
+    public static function sf() {}
+}
+
+class D {
+    /**
+        D.f doc
+    **/
+    @:expose("toplevel")
+    static function f() {}
+}
+
+----
+
+/**
+ * C doc
+ */
+export class C {
+	/**
+	 * C.new doc
+	 */
+	constructor();
+	/**
+	 * C.f doc
+	 */
+	v: number;
+	/**
+	 * C.f doc
+	 */
+	f(): void;
+	/**
+	 * C.sv doc
+	 */
+	static sv: number;
+	/**
+	 * C.sf doc
+	 */
+	static sf(): void;
+}
+
+/**
+ * D.f doc
+ */
+export function toplevel(): void;
