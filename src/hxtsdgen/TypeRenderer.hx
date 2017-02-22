@@ -6,7 +6,7 @@ using haxe.macro.Tools;
 import hxtsdgen.ArgsRenderer.renderArgs;
 
 class TypeRenderer {
-    public static function renderType(t:Type):String {
+    public static function renderType(ctx:Generator, t:Type):String {
         return switch (t) {
             case TInst(_.get() => cl, params):
                 switch [cl, params] {
@@ -14,7 +14,7 @@ class TypeRenderer {
                         "string";
 
                     case [{pack: [], name: "Array"}, [elemT]]:
-                        renderType(elemT) + "[]";
+                        renderType(ctx, elemT) + "[]";
 
                     case [{name: name, kind: KTypeParameter(_)}, _]:
                         name;
@@ -36,18 +36,18 @@ class TypeRenderer {
                         "void";
 
                     case [{pack: ["haxe", "extern"], name: "EitherType"}, [aT, bT]]:
-                        '${renderType(aT)} | ${renderType(bT)}';
+                        '${renderType(ctx, aT)} | ${renderType(ctx, bT)}';
 
                     default:
                         // TODO: do we want to have a `type Name = Underlying` here maybe?
-                        renderType(ab.type.applyTypeParameters(ab.params, params));
+                        renderType(ctx, ab.type.applyTypeParameters(ab.params, params));
                 }
 
             case TAnonymous(_.get() => anon):
                 var fields = [];
                 for (field in anon.fields) {
                     var opt = if (field.meta.has(":optional")) "?" else "";
-                    fields.push('${field.name}$opt: ${renderType(field.type)}');
+                    fields.push('${field.name}$opt: ${renderType(ctx, field.type)}');
                 }
                 '{${fields.join(", ")}}';
 
@@ -55,21 +55,21 @@ class TypeRenderer {
                 switch [dt, params] {
                     case [{pack: [], name: "Null"}, [realT]]:
                         // TODO: generate `| null` union unless it comes from an optional field?
-                        renderType(realT);
+                        renderType(ctx, realT);
 
                     default:
                         // TODO: generate TS interface declarations
-                        renderType(dt.type.applyTypeParameters(dt.params, params));
+                        renderType(ctx, dt.type.applyTypeParameters(dt.params, params));
                 }
 
             case TFun(args, ret):
-                '(${renderArgs(args)}) => ${renderType(ret)}';
+                '(${renderArgs(ctx, args)}) => ${renderType(ctx, ret)}';
 
             case TDynamic(null):
                 'any';
 
             case TDynamic(elemT):
-                '{ [key: string]: ${renderType(elemT)} }';
+                '{ [key: string]: ${renderType(ctx, elemT)} }';
 
             default:
                 throw 'Cannot render type ${t.toString()} into a TypeScript declaration (TODO?)';

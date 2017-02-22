@@ -50,21 +50,34 @@ class Generator {
                 sys.io.File.saveContent(outDTS, src);
             } else {
                 Context.onAfterGenerate(function() {
-                    var declarations = [];
+                    var gen = new Generator();
+                    var declarations = gen.generate(exposed);
+
                     if (includeHeader)
-                        declarations.push(HEADER);
-                    for (e in exposed) {
-                        switch (e) {
-                            case EClass(cl):
-                                declarations.push(generateClassDeclaration(cl));
-                            case EMethod(cl, f):
-                                declarations.push(generateFunctionDeclaration(cl, f));
-                        }
-                    }
+                        declarations.unshift(HEADER);
+
                     sys.io.File.saveContent(outDTS, declarations.join("\n\n"));
                 });
             }
         });
+    }
+
+    var declarations:Array<String>;
+
+    function new() {
+        this.declarations = [];
+    }
+
+    function generate(exposed:Array<ExposeKind>) {
+        for (e in exposed) {
+            switch (e) {
+                case EClass(cl):
+                    declarations.push(generateClassDeclaration(cl));
+                case EMethod(cl, f):
+                    declarations.push(generateFunctionDeclaration(cl, f));
+            }
+        }
+        return declarations;
     }
 
     static function getExposePath(m:MetaAccess):Array<String> {
@@ -85,7 +98,7 @@ class Generator {
             'export namespace ${exposedPath.join(".")} {\n${fn(name, "\t")}\n}';
     }
 
-    static function generateFunctionDeclaration(cl:ClassType, f:ClassField):String {
+    function generateFunctionDeclaration(cl:ClassType, f:ClassField):String {
         var exposePath = getExposePath(f.meta);
         if (exposePath == null)
             exposePath = cl.pack.concat([cl.name, f.name]);
@@ -111,9 +124,9 @@ class Generator {
         });
     }
 
-    static function renderFunction(name:String, args:Array<{name:String, opt:Bool, t:Type}>, ret:Type, params:Array<TypeParameter>, indent:String, prefix:String):String {
+    function renderFunction(name:String, args:Array<{name:String, opt:Bool, t:Type}>, ret:Type, params:Array<TypeParameter>, indent:String, prefix:String):String {
         var tparams = renderTypeParams(params);
-        return '$indent$prefix$name$tparams(${renderArgs(args)}): ${renderType(ret)};';
+        return '$indent$prefix$name$tparams(${renderArgs(this, args)}): ${renderType(this, ret)};';
     }
 
     static function renderTypeParams(params:Array<TypeParameter>):String {
@@ -122,7 +135,7 @@ class Generator {
             else "<" + params.map(function(t) return return t.name).join(", ") + ">";
     }
 
-    static function generateClassDeclaration(cl:ClassType):String {
+    function generateClassDeclaration(cl:ClassType):String {
         var exposePath = getExposePath(cl.meta);
         if (exposePath == null)
             exposePath = cl.pack.concat([cl.name]);
@@ -150,7 +163,7 @@ class Generator {
                     switch (ctor.type) {
                         case TFun(args, _):
                             var prefix = if (ctor.isPublic) "" else "private "; // TODO: should this really be protected?
-                            parts.push('${indent}${prefix}constructor(${renderArgs(args)});');
+                            parts.push('${indent}${prefix}constructor(${renderArgs(this, args)});');
                         default:
                             throw "wtf";
                     }
@@ -175,7 +188,7 @@ class Generator {
                                         prefix += "readonly ";
                                     default:
                                 }
-                                parts.push('$indent$prefix${field.name}: ${renderType(field.type)};');
+                                parts.push('$indent$prefix${field.name}: ${renderType(this, field.type)};');
 
                             default:
                         }

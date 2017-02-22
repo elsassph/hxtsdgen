@@ -5,7 +5,7 @@ import haxe.macro.Type;
 import hxtsdgen.TypeRenderer.renderType;
 
 class ArgsRenderer {
-    public static function renderArgs(args:Array<{name:String, opt:Bool, t:Type}>):String {
+    public static function renderArgs(ctx:Generator, args:Array<{name:String, opt:Bool, t:Type}>):String {
         // here we handle haxe's crazy argument skipping:
         // we allow trailing optional args, but if there's non-optional
         // args after the optional ones, we consider them non-optional for TS
@@ -26,7 +26,7 @@ class ArgsRenderer {
             var arg = args[i];
             var name = if (arg.name != "") arg.name else 'arg$i';
             var opt = if (arg.opt && i > noOptionalUntil) "?" else "";
-            tsArgs.push('$name$opt: ${renderType(arg.t)}');
+            tsArgs.push('$name$opt: ${renderType(ctx, arg.t)}');
         }
         return tsArgs.join(", ");
     }
