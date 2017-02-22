@@ -1,9 +1,9 @@
 @:expose
 class C {
-    public var v(default,null):String;
-    public var v2(default,never):String;
-    public static var v3(default,null):String;
-    public static var v4(default,never):String;
+	public var v(default,null):String;
+	public var v2(default,never):String;
+	public static var v3(default,null):String;
+	public static var v4(default,never):String;
 }
 
 ----

@@ -1,9 +1,9 @@
 @:expose
 class C {
-    public static function f(cb:Void->Void) {}
-    public static function f2(cb:String->?Int->Int) {}
-    public static function f3(cb:String->?Int->String->Void) {}
-    public static function f4(cb:String->?Int->String->?Bool->Void) {}
+	public static function f(cb:Void->Void) {}
+	public static function f2(cb:String->?Int->Int) {}
+	public static function f3(cb:String->?Int->String->Void) {}
+	public static function f4(cb:String->?Int->String->?Bool->Void) {}
 }
 
 ----

@@ -1,9 +1,9 @@
 @:expose
 class C {
-    public static function f() {}
-    public static function f2(a:String, ?b:Int):Int return 1;
-    public static function f3(a:String, ?b:Int, c:String) {}
-    public static function f4(a:String, ?b:Int, c:String, ?d:Bool) {}
+	public static function f() {}
+	public static function f2(a:String, ?b:Int):Int return 1;
+	public static function f3(a:String, ?b:Int, c:String) {}
+	public static function f4(a:String, ?b:Int, c:String, ?d:Bool) {}
 }
 
 ----

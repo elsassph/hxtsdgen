@@ -1,7 +1,7 @@
 class C {
-    @:expose("f")
-    public static function f():{a:Int, ?b:{f:Bool}}
-        return null;
+	@:expose("f")
+	public static function f():{a:Int, ?b:{f:Bool}}
+		return null;
 }
 
 ----
