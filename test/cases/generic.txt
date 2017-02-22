@@ -1,0 +1,12 @@
+@:expose
+class C<A,B,C> {
+	public function new() {}
+	public function f<T>(a:Array<T>, b:C):T return null;
+}
+
+----
+
+export class C<A, B, C> {
+	constructor();
+	f<T>(a: T[], b: C): T;
+}
