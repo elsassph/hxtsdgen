@@ -1,9 +1,13 @@
+import haxe.extern.EitherType as Or;
+
 @:expose
 class C {
 	public static function f(cb:Void->Void) {}
 	public static function f2(cb:String->?Int->Int) {}
 	public static function f3(cb:String->?Int->String->Void) {}
 	public static function f4(cb:String->?Int->String->?Bool->Void) {}
+	public static function f5(cb:Array<String->Void>) {}
+	public static function f6(cb:Or<Int->Bool,Array<String->Void>>) {}
 }
 
 ----
@@ -14,4 +18,6 @@ export class C {
 	static f2(cb: (arg0: string, arg1?: number) => number): void;
 	static f3(cb: (arg0: string, arg1: number, arg2: string) => void): void;
 	static f4(cb: (arg0: string, arg1: number, arg2: string, arg3?: boolean) => void): void;
+	static f5(cb: ((arg0: string) => void)[]): void;
+	static f6(cb: ((arg0: number) => boolean) | ((arg0: string) => void)[]): void;
 }

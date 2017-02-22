@@ -6,7 +6,9 @@ using haxe.macro.Tools;
 import hxtsdgen.ArgsRenderer.renderArgs;
 
 class TypeRenderer {
-    public static function renderType(ctx:Generator, t:Type):String {
+    public static function renderType(ctx:Generator, t:Type, paren = false):String {
+        inline function wrap(s) return if (paren) '($s)' else s;
+
         return switch (t) {
             case TInst(_.get() => cl, params):
                 switch [cl, params] {
@@ -14,7 +16,7 @@ class TypeRenderer {
                         "string";
 
                     case [{pack: [], name: "Array"}, [elemT]]:
-                        renderType(ctx, elemT) + "[]";
+                        renderType(ctx, elemT, true) + "[]";
 
                     case [{name: name, kind: KTypeParameter(_)}, _]:
                         name;
@@ -36,11 +38,11 @@ class TypeRenderer {
                         "void";
 
                     case [{pack: ["haxe", "extern"], name: "EitherType"}, [aT, bT]]:
-                        '${renderType(ctx, aT)} | ${renderType(ctx, bT)}';
+                        '${renderType(ctx, aT, true)} | ${renderType(ctx, bT, true)}';
 
                     default:
                         // TODO: do we want to have a `type Name = Underlying` here maybe?
-                        renderType(ctx, ab.type.applyTypeParameters(ab.params, params));
+                        renderType(ctx, ab.type.applyTypeParameters(ab.params, params), paren);
                 }
 
             case TAnonymous(_.get() => anon):
@@ -55,15 +57,15 @@ class TypeRenderer {
                 switch [dt, params] {
                     case [{pack: [], name: "Null"}, [realT]]:
                         // TODO: generate `| null` union unless it comes from an optional field?
-                        renderType(ctx, realT);
+                        renderType(ctx, realT, paren);
 
                     default:
                         // TODO: generate TS interface declarations
-                        renderType(ctx, dt.type.applyTypeParameters(dt.params, params));
+                        renderType(ctx, dt.type.applyTypeParameters(dt.params, params), paren);
                 }
 
             case TFun(args, ret):
-                '(${renderArgs(ctx, args)}) => ${renderType(ctx, ret)}';
+                wrap('(${renderArgs(ctx, args)}) => ${renderType(ctx, ret)}');
 
             case TDynamic(null):
                 'any';
