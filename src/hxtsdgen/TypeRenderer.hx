@@ -62,6 +62,9 @@ class TypeRenderer {
             case TFun(args, ret):
                 '(${renderArgs(args)}) => ${renderType(ret)}';
 
+            case TDynamic(null):
+                'any';
+
             default:
                 throw 'Cannot render type ${t.toString()} into a TypeScript declaration (TODO?)';
         }
