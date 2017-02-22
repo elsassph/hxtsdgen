@@ -1,0 +1,21 @@
+@:expose
+class C {
+	public static function int() return 1;
+	public static function float() return 1.0;
+	public static function string() return "hi";
+	public static function bool() return false;
+	public static function void() {};
+	public static function array() return [true,false];
+}
+
+----
+
+export class C {
+	private constructor();
+	static int(): number;
+	static float(): number;
+	static string(): string;
+	static bool(): boolean;
+	static void(): void;
+	static array(): boolean[];
+}
