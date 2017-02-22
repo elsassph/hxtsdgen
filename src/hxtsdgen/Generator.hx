@@ -152,9 +152,11 @@ class Generator {
             {
                 var indent = indent + "\t";
 
+                var privateCtor = true;
                 if (cl.constructor != null) {
                     var ctor = cl.constructor.get();
                     if (ctor.isPublic)
+                        privateCtor = false;
                         if (ctor.doc != null)
                             parts.push(renderDoc(ctor.doc, indent));
                         switch (ctor.type) {
@@ -164,6 +166,9 @@ class Generator {
                                 throw "wtf";
                         }
                 }
+
+                if (privateCtor)
+                    parts.push('${indent}private constructor();');
 
                 function addField(field:ClassField, isStatic:Bool) {
                     if (field.isPublic) {

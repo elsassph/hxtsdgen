@@ -21,13 +21,16 @@ class F {
 ----
 
 export class C {
+	private constructor();
 }
 
 export class some {
+	private constructor();
 }
 
 export namespace my.pack {
 	class A {
+		private constructor();
 	}
 }
 

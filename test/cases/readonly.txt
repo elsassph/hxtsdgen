@@ -9,6 +9,7 @@ class C {
 ----
 
 export class C {
+	private constructor();
 	readonly v: string;
 	readonly v2: string;
 	static readonly v3: string;
