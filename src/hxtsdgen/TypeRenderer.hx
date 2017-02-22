@@ -65,6 +65,9 @@ class TypeRenderer {
             case TDynamic(null):
                 'any';
 
+            case TDynamic(elemT):
+                '{ [key: string]: ${renderType(elemT)} }';
+
             default:
                 throw 'Cannot render type ${t.toString()} into a TypeScript declaration (TODO?)';
         }

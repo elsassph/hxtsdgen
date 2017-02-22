@@ -8,6 +8,7 @@ class C {
 	public static function array() return [true,false];
 	public static function dyn():Dynamic return null;
 	public static function any():Any return null;
+	public static function dynobj():Dynamic<Float> return null;
 }
 
 ----
@@ -22,4 +23,5 @@ export class C {
 	static array(): boolean[];
 	static dyn(): any;
 	static any(): any;
+	static dynobj(): { [key: string]: number };
 }
