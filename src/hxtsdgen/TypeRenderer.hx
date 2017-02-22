@@ -35,6 +35,9 @@ class TypeRenderer {
                     case [{pack: [], name: "Void"}, _]:
                         "void";
 
+                    case [{pack: ["haxe", "extern"], name: "EitherType"}, [aT, bT]]:
+                        '${renderType(aT)} | ${renderType(bT)}';
+
                     default:
                         // TODO: do we want to have a `type Name = Underlying` here maybe?
                         renderType(ab.type.applyTypeParameters(ab.params, params));

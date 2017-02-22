@@ -1,0 +1,14 @@
+import haxe.extern.EitherType as Or;
+
+@:expose class C {
+	public var v1:Or<Int,String>;
+	public var v2:Or<Int,Or<String,Bool>>;
+}
+
+----
+
+export class C {
+	private constructor();
+	v1: number | string;
+	v2: number | string | boolean;
+}
