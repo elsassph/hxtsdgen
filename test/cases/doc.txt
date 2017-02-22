@@ -29,6 +29,12 @@ class C {
     public static function sf() {}
 }
 
+/**
+ * This label starts with a stupid asterisk
+ */
+@:expose
+class Asterisk {}
+
 class D {
     /**
         D.f doc
@@ -63,6 +69,13 @@ export class C {
 	 * C.sf doc
 	 */
 	static sf(): void;
+}
+
+/**
+ * This label starts with a stupid asterisk
+ */
+export class Asterisk {
+	private constructor();
 }
 
 /**
