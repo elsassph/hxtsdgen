@@ -23,6 +23,11 @@ You may ask, how does plain JavaScript benefit here? Well, the thing is, modern 
 such as VS Code and (I think) IDEA, can download and use TypeScript "typings" for providing hints
 while editing JavaScript code.
 
-## Early screenshot:
+## How does it look?
 
-![](http://i.imgur.com/W90hCvO.gif)
+Check out these 3 awesome panes (left-to-right):
+ * `Main.hx` (Haxe source code)
+ * `main.d.ts` (generated TypeScript declarations)
+ * `test.ts` (TypeScript source code that uses the declarations)
+
+![](http://i.imgur.com/AHmdHtv.gif)
