@@ -1,0 +1,28 @@
+@:expose
+class C {}
+
+@:expose
+class D {
+	function new(v:Int) {}
+}
+
+@:expose
+class E {
+	public function new(v:Int) {}
+}
+
+
+----
+
+
+export class C {
+	private constructor();
+}
+
+export class D {
+	private constructor(v: number);
+}
+
+export class E {
+	constructor(v: number);
+}

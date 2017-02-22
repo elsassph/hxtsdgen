@@ -142,20 +142,19 @@ class Generator {
                 var privateCtor = true;
                 if (cl.constructor != null) {
                     var ctor = cl.constructor.get();
-                    if (ctor.isPublic)
-                        privateCtor = false;
-                        if (ctor.doc != null)
-                            parts.push(renderDoc(ctor.doc, indent));
-                        switch (ctor.type) {
-                            case TFun(args, _):
-                                parts.push('${indent}constructor(${renderArgs(args)});');
-                            default:
-                                throw "wtf";
-                        }
-                }
-
-                if (privateCtor)
+                    privateCtor = false;
+                    if (ctor.doc != null)
+                        parts.push(renderDoc(ctor.doc, indent));
+                    switch (ctor.type) {
+                        case TFun(args, _):
+                            var prefix = if (ctor.isPublic) "" else "private "; // TODO: should this really be protected?
+                            parts.push('${indent}${prefix}constructor(${renderArgs(args)});');
+                        default:
+                            throw "wtf";
+                    }
+                } else {
                     parts.push('${indent}private constructor();');
+                }
 
                 function addField(field:ClassField, isStatic:Bool) {
                     if (field.isPublic) {
