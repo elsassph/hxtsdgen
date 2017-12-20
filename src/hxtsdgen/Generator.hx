@@ -149,7 +149,9 @@ class Generator {
             // TODO: maybe it's a good idea to output all-static class that is not referenced
             // elsewhere as a namespace for TypeScript
             var tparams = renderTypeParams(cl.params);
-            parts.push('$indent${if (indent == "") "export " else ""}class $name$tparams {');
+            var isInterface = cl.isInterface;
+            var type = isInterface ? 'interface' : 'class';
+            parts.push('$indent${if (indent == "") "export " else ""}$type $name$tparams {');
 
             {
                 var indent = indent + "\t";
@@ -167,7 +169,7 @@ class Generator {
                         default:
                             throw "wtf";
                     }
-                } else {
+                } else if (!isInterface) {
                     parts.push('${indent}private constructor();');
                 }
 
@@ -188,7 +190,8 @@ class Generator {
                                         prefix += "readonly ";
                                     default:
                                 }
-                                parts.push('$indent$prefix${field.name}: ${renderType(this, field.type)};');
+                                var option = isInterface && isNullable(field) ? '?' : '';
+                                parts.push('$indent$prefix${field.name}$option: ${renderType(this, field.type)};');
 
                             default:
                         }
@@ -209,5 +212,11 @@ class Generator {
         });
     }
 
+    function isNullable(field:ClassField) {
+        return switch (field.type) {
+            case TType(_.get() => _.name => 'Null', _): true;
+            default: false;
+        }
+    }
 
 }

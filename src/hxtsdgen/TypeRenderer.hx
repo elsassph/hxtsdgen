@@ -23,7 +23,13 @@ class TypeRenderer {
 
                     default:
                         // TODO: handle @:expose'd paths
-                        haxe.macro.MacroStringTools.toDotPath(cl.pack, cl.name);
+                        var dotName = haxe.macro.MacroStringTools.toDotPath(cl.pack, cl.name);
+                        // type parameters
+                        if (params.length > 0) {
+                            var genericParams = params.map(function(p) return renderType(ctx, p));
+                            dotName += '<${genericParams.join(',')}>';
+                        }
+                        dotName;
                 }
 
             case TAbstract(_.get() => ab, params):
