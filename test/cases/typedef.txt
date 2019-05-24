@@ -1,0 +1,71 @@
+typedef W = {
+	var w:Int;
+}
+
+@:expose
+interface X {
+	var x:Int;
+}
+
+@:expose("Y2")
+typedef Y = {
+	var y:Int;
+}
+
+@:expose
+typedef Z = {
+	function f1(a:String):Int;
+	var f2: String -> Int;
+};
+
+@:expose
+class A {
+	public function f():X {
+		return null;
+	}
+}
+
+@:expose
+class B {
+	public function f():Y {
+		return { y: 1 };
+	}
+}
+
+@:expose
+interface C {
+	function f1():W;
+	function f2():X;
+	function f3():Z;
+}
+
+----
+
+export interface X {
+	x: number;
+}
+
+export type Y2 = {
+	y: number;
+}
+
+export type Z = {
+	f1(a: string): number;
+	f2: (arg0: string) => number;
+}
+
+export class A {
+	private constructor();
+	f(): X;
+}
+
+export class B {
+	private constructor();
+	f(): Y2;
+}
+
+export interface C {
+	f1(): {w: number};
+	f2(): X;
+	f3(): Z;
+}
