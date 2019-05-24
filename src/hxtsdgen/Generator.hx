@@ -184,14 +184,25 @@ class Generator {
                             case [FMethod(_), TFun(args, ret)]:
                                 parts.push(renderFunction(field.name, args, ret, field.params, indent, prefix));
 
-                            case [FVar(_,write), _]:
+                            case [FVar(read, write), _]:
+                                var ro = "";
                                 switch (write) {
                                     case AccNo|AccNever:
-                                        prefix += "readonly ";
+                                        ro = "readonly ";
+                                    case AccCall:
+                                        ro = "readonly ";
+                                        if (!isInterface)
+                                            parts.push(renderSetter(field, indent, prefix));
                                     default:
                                 }
-                                var option = isInterface && isNullable(field) ? '?' : '';
-                                parts.push('$indent$prefix${field.name}$option: ${renderType(this, field.type)};');
+                                if (read == AccCall) {
+                                    if (!isInterface)
+                                        parts.push(renderGetter(field, indent, prefix));
+                                    if (!field.meta.has(":isVar"))
+                                        return; // no field
+                                }
+                                var option = isInterface && isNullable(field) ? "?" : "";
+                                parts.push('$indent$prefix$ro${field.name}$option: ${renderType(this, field.type)};');
 
                             default:
                         }
@@ -210,6 +221,19 @@ class Generator {
             parts.push('$indent}');
             return parts.join("\n");
         });
+    }
+
+    function renderGetter(field:ClassField, indent:String, prefix:String) {
+        return renderFunction('get_${field.name}', [], field.type, field.params, indent, prefix);
+    }
+
+    function renderSetter(field:ClassField, indent:String, prefix:String) {
+        var args = [{
+            name: 'value',
+            opt: false,
+            t: field.type
+        }];
+        return renderFunction('set_${field.name}', args, field.type, field.params, indent, prefix);
     }
 
     function isNullable(field:ClassField) {
