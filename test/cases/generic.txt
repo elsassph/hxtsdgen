@@ -1,7 +1,21 @@
+import js.Promise;
+
 @:expose
 class C<A,B,C> {
 	public function new() {}
 	public function f<T>(a:Array<T>, b:C):T return null;
+}
+
+@:expose class D {
+	public function load():Promise<String> {
+		return Promise.resolve('');
+	}
+}
+
+@:expose class E<T> {
+	public function load():js.Promise<T> {
+		return Promise.resolve(null);
+	}
 }
 
 ----
@@ -9,4 +23,14 @@ class C<A,B,C> {
 export class C<A, B, C> {
 	constructor();
 	f<T>(a: T[], b: C): T;
+}
+
+export class D {
+	private constructor();
+	load(): Promise<string>;
+}
+
+export class E<T> {
+	private constructor();
+	load(): Promise<T>;
 }
