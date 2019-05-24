@@ -5,6 +5,7 @@ language: haxe
 
 haxe:
 - 3.4.0
+- latest
 
 install:
 - haxelib install hxnodejs
