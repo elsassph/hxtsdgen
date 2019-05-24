@@ -174,7 +174,7 @@ class Generator {
                 }
 
                 function addField(field:ClassField, isStatic:Bool) {
-                    if (field.isPublic) {
+                    if (field.isPublic || isPropertyGetterSetter(cl, field)) {
                         if (field.doc != null)
                             parts.push(renderDoc(field.doc, indent));
 
@@ -185,24 +185,15 @@ class Generator {
                                 parts.push(renderFunction(field.name, args, ret, field.params, indent, prefix));
 
                             case [FVar(read, write), _]:
-                                var ro = "";
                                 switch (write) {
-                                    case AccNo|AccNever:
-                                        ro = "readonly ";
-                                    case AccCall:
-                                        ro = "readonly ";
-                                        if (!isInterface)
-                                            parts.push(renderSetter(field, indent, prefix));
+                                    case AccNo|AccNever|AccCall:
+                                        prefix += "readonly ";
                                     default:
                                 }
-                                if (read == AccCall) {
-                                    if (!isInterface)
-                                        parts.push(renderGetter(field, indent, prefix));
-                                    if (!field.meta.has(":isVar"))
-                                        return; // no field
+                                if (read != AccCall || field.meta.has(":isVar")) {
+                                    var option = isInterface && isNullable(field) ? "?" : "";
+                                    parts.push('$indent$prefix${field.name}$option: ${renderType(this, field.type)};');
                                 }
-                                var option = isInterface && isNullable(field) ? "?" : "";
-                                parts.push('$indent$prefix$ro${field.name}$option: ${renderType(this, field.type)};');
 
                             default:
                         }
@@ -221,6 +212,24 @@ class Generator {
             parts.push('$indent}');
             return parts.join("\n");
         });
+    }
+
+    // For a given `method` looking like a `get_x`/`set_x`, look for a matching property
+    function isPropertyGetterSetter(cl:ClassType, method:ClassField) {
+        var re = new EReg('(get|set)_(.*)', '');
+        if (re.match(method.name)) {
+            var name = re.matched(2);
+            for (field in cl.fields.get()) if (field.name == name && isProperty(field)) return true;
+            for (field in cl.statics.get()) if (field.name == name && isProperty(field)) return true;
+        }
+        return false;
+    }
+
+    function isProperty(field) {
+        return switch(field.kind) {
+            case FVar(read, write): write == AccCall || read == AccCall;
+            default: false;
+        };
     }
 
     function renderGetter(field:ClassField, indent:String, prefix:String) {

@@ -1,0 +1,134 @@
+@:expose
+class A {
+	public var field(default, null):String;
+}
+
+@:expose
+class B {
+	public var field(default, never):String;
+}
+
+@:expose
+class C {
+	public var field(get, null): String;
+	function get_field(): String { return null; }
+}
+
+@:expose
+class D {
+	public var field(default, set):String;
+	function set_field(value: String): String { return field = value; }
+}
+
+@:expose
+class E {
+	public var field(default, set):String;
+	function set_field(v: String): String { return field = v; }
+}
+
+@:expose
+class F {
+	var _field: String;
+	public var field(get, set): String;
+	function get_field(): String { return null; }
+	function set_field(value: String): String { return _field = value; }
+}
+
+@:expose
+class G {
+	@:isVar public var field(get, set): String;
+	function get_field(): String { return null; }
+	function set_field(value: String): String { return field = value; }
+}
+
+@:expose
+class H {
+	static public var field(default, null):String;
+}
+
+@:expose
+class I {
+	@:isVar static public var field(get, set): String;
+	static function get_field(): String { return null; }
+	static function set_field(value: String): String { return field = value; }
+}
+
+@:expose
+class J<T> {
+	public var field(default, set):T;
+	function set_field(value: T): T { return field = value; }
+}
+
+@:expose
+class K {
+	var _field: String;
+	public var field(get, set): String;
+	public function get_field(): String { return null; }
+	public function set_field(v: String): String { return _field = v; }
+}
+
+----
+
+export class A {
+	private constructor();
+	readonly field: string;
+}
+
+export class B {
+	private constructor();
+	readonly field: string;
+}
+
+export class C {
+	private constructor();
+	get_field(): string;
+}
+
+export class D {
+	private constructor();
+	readonly field: string;
+	set_field(value: string): string;
+}
+
+export class E {
+	private constructor();
+	readonly field: string;
+	set_field(v: string): string;
+}
+
+export class F {
+	private constructor();
+	get_field(): string;
+	set_field(value: string): string;
+}
+
+export class G {
+	private constructor();
+	readonly field: string;
+	get_field(): string;
+	set_field(value: string): string;
+}
+
+export class H {
+	private constructor();
+	static readonly field: string;
+}
+
+export class I {
+	private constructor();
+	static readonly field: string;
+	static get_field(): string;
+	static set_field(value: string): string;
+}
+
+export class J<T> {
+	private constructor();
+	readonly field: T;
+	set_field(value: T): T;
+}
+
+export class K {
+	private constructor();
+	get_field(): string;
+	set_field(v: string): string;
+}
