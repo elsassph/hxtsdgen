@@ -6,6 +6,7 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 using haxe.macro.Tools;
+using StringTools;
 
 import hxtsdgen.DocRenderer.renderDoc;
 import hxtsdgen.ArgsRenderer.renderArgs;
@@ -13,6 +14,7 @@ import hxtsdgen.TypeRenderer.renderType;
 
 enum ExposeKind {
     EClass(c:ClassType);
+    EEnum(c:ClassType);
     ETypedef(t:DefType, anon:AnonType);
     EMethod(c:ClassType, cf:ClassField);
 }
@@ -37,11 +39,18 @@ class Generator {
                             exposed.push(ETypedef(t, anon));
                         }
                     case [_, TInst(_.get() => cl, _)]:
-                        if (cl.meta.has(":expose"))
-                            exposed.push(EClass(cl));
-                        for (f in cl.statics.get()) {
-                            if (f.meta.has(":expose"))
-                                exposed.push(EMethod(cl, f));
+                        if (cl.meta.has(':enum')) {
+                            if (cl.meta.has(":expose")) {
+                                exposed.push(EEnum(cl));
+                            }
+                        } else {
+                            if (cl.meta.has(":expose")) {
+                                exposed.push(EClass(cl));
+                            }
+                            for (f in cl.statics.get()) {
+                                if (f.meta.has(":expose"))
+                                    exposed.push(EMethod(cl, f));
+                            }
                         }
                     default:
                 }
@@ -78,6 +87,8 @@ class Generator {
             switch (e) {
                 case EClass(cl):
                     declarations.push(generateClassDeclaration(cl));
+                case EEnum(t):
+                    declarations.push(generateEnumDeclaration(t));
                 case ETypedef(t, anon):
                     declarations.push(generateTypedefDeclaration(t, anon));
                 case EMethod(cl, f):
@@ -180,6 +191,41 @@ class Generator {
         });
     }
 
+    function generateEnumDeclaration(t:ClassType):String {
+        // TypeScript `const enum` are pure typing constructs (e.g. don't exist in JS either)
+        // so it matches Haxe abstract enum well.
+
+        // Sanitize enum name
+        var name = t.name.replace("_Impl_", "");
+        var pack = t.pack.filter(function (p) return p.substr(0, 3) != "_Hx");
+
+        var exposePath = getExposePath(t.meta);
+        if (exposePath == null)
+            exposePath = pack.concat([name]);
+
+        return wrapInNamespace(exposePath, function(name, indent) {
+            var parts = [];
+
+            if (t.doc != null)
+                parts.push(renderDoc(t.doc, indent));
+
+            parts.push('$indent${if (indent == "") "export " else ""}const enum $name {');
+
+            {
+                var indent = indent + "\t";
+                var added = 0;
+                var fields = t.statics.get();
+                for (field in fields)
+                    if (field.isPublic)
+                        added += addConstValue(field, indent, parts) ? 1 : 0;
+                if (added == 0) return ""; // empty enum
+            }
+
+            parts.push('$indent}');
+            return parts.join("\n");
+        });
+    }
+
     function generateTypedefDeclaration(t:DefType, anon:AnonType):String {
         var exposePath = getExposePath(t.meta);
         if (exposePath == null)
@@ -206,6 +252,36 @@ class Generator {
             parts.push('$indent}');
             return parts.join("\n");
         });
+    }
+
+    function addConstValue(field:ClassField, indent:String, parts:Array<String>) {
+        switch (field.kind) {
+            case FVar(_, _):
+                var expr = field.expr().expr;
+                var value = switch (expr) {
+                    case TCast(_.expr => TConst(c), _):
+                        switch (c) {
+                            case TInt(v): Std.string(v);
+                            case TFloat(f): Std.string(f);
+                            case TString(s): '"${escapeString(s)}"';
+                            case TNull: null; // not allowed
+                            case TBool(_): null; // not allowed
+                            default: null;
+                        }
+                    default: null;
+                };
+                if (value != null) {
+                    parts.push('$indent${field.name} = $value,');
+                    return true;
+                }
+            default:
+        }
+        return false;
+    }
+
+    function escapeString(s:String) {
+        return s.split('\\').join('\\\\')
+            .split('"').join('\\"');
     }
 
     function addField(field:ClassField, isStatic:Bool, isInterface:Bool, indent:String, parts:Array<String>) {
