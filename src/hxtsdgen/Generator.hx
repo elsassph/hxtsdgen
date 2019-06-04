@@ -195,13 +195,16 @@ class Generator {
         // TypeScript `const enum` are pure typing constructs (e.g. don't exist in JS either)
         // so it matches Haxe abstract enum well.
 
-        // Sanitize enum name
-        var name = t.name.replace("_Impl_", "");
-        var pack = t.pack.filter(function (p) return p.substr(0, 3) != "_Hx");
+        // Unwrap abstract type
+        var bt:BaseType = t;
+        switch (t.kind) {
+            case KAbstractImpl(_.get() => at): bt = at;
+            default: // we keep what we have
+        }
 
-        var exposePath = getExposePath(t.meta);
+        var exposePath = getExposePath(bt.meta);
         if (exposePath == null)
-            exposePath = pack.concat([name]);
+            exposePath = bt.pack.concat([bt.name]);
 
         return wrapInNamespace(exposePath, function(name, indent) {
             var parts = [];
