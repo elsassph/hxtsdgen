@@ -1,0 +1,47 @@
+@:expose
+interface C {}
+
+@:expose
+interface D {
+	function test(v:Int):Void;
+}
+
+@:expose
+interface E {
+	var field:String;
+}
+
+@:expose
+interface F {
+	var field(default, null):String;
+}
+
+@:expose
+interface G {
+	var field(get, set):String;
+}
+
+
+----
+
+
+export interface C {
+}
+
+export interface D {
+	test(v: number): void;
+}
+
+export interface E {
+	field: string;
+}
+
+export interface F {
+	readonly field: string;
+}
+
+export interface G {
+	set_field(value: string): string;
+	get_field(): string;
+	field: string;
+}
