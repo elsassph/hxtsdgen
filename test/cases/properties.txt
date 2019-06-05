@@ -104,7 +104,6 @@ export class F {
 
 export class G {
 	private constructor();
-	readonly field: string;
 	get_field(): string;
 	set_field(value: string): string;
 }
@@ -116,7 +115,6 @@ export class H {
 
 export class I {
 	private constructor();
-	static readonly field: string;
 	static get_field(): string;
 	static set_field(value: string): string;
 }

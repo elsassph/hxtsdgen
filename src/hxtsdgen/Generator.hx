@@ -190,7 +190,7 @@ class Generator {
                                         prefix += "readonly ";
                                     default:
                                 }
-                                if (read != AccCall || field.meta.has(":isVar")) {
+                                if (read != AccCall) {
                                     var option = isInterface && isNullable(field) ? "?" : "";
                                     parts.push('$indent$prefix${field.name}$option: ${renderType(this, field.type)};');
                                 }
