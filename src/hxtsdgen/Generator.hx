@@ -13,6 +13,7 @@ import hxtsdgen.TypeRenderer.renderType;
 
 enum ExposeKind {
     EClass(c:ClassType);
+    ETypedef(t:DefType, anon:AnonType);
     EMethod(c:ClassType, cf:ClassField);
 }
 
@@ -30,8 +31,12 @@ class Generator {
 
             var exposed = [];
             for (type in types) {
-                switch (type.follow()) {
-                    case TInst(_.get() => cl, _):
+                switch [type, type.follow()] {
+                    case [TType(_.get() => t, _), TAnonymous(_.get() => anon)]:
+                        if (t.meta.has(":expose")) {
+                            exposed.push(ETypedef(t, anon));
+                        }
+                    case [_, TInst(_.get() => cl, _)]:
                         if (cl.meta.has(":expose"))
                             exposed.push(EClass(cl));
                         for (f in cl.statics.get()) {
@@ -73,6 +78,8 @@ class Generator {
             switch (e) {
                 case EClass(cl):
                     declarations.push(generateClassDeclaration(cl));
+                case ETypedef(t, anon):
+                    declarations.push(generateTypedefDeclaration(t, anon));
                 case EMethod(cl, f):
                     declarations.push(generateFunctionDeclaration(cl, f));
             }
@@ -80,7 +87,7 @@ class Generator {
         return declarations;
     }
 
-    static function getExposePath(m:MetaAccess):Array<String> {
+    static public function getExposePath(m:MetaAccess):Array<String> {
         switch (m.extract(":expose")) {
             case []: throw "no @:expose meta!"; // this should not happen
             case [{params: []}]: return null;
@@ -155,58 +162,17 @@ class Generator {
 
             {
                 var indent = indent + "\t";
+                generateConstructor(cl, isInterface, indent, parts);
 
-                var privateCtor = true;
-                if (cl.constructor != null) {
-                    var ctor = cl.constructor.get();
-                    privateCtor = false;
-                    if (ctor.doc != null)
-                        parts.push(renderDoc(ctor.doc, indent));
-                    switch (ctor.type) {
-                        case TFun(args, _):
-                            var prefix = if (ctor.isPublic) "" else "private "; // TODO: should this really be protected?
-                            parts.push('${indent}${prefix}constructor(${renderArgs(this, args)});');
-                        default:
-                            throw "wtf";
-                    }
-                } else if (!isInterface) {
-                    parts.push('${indent}private constructor();');
-                }
+                var fields = cl.fields.get();
+                for (field in fields)
+                    if (field.isPublic || isPropertyGetterSetter(fields, field))
+                        addField(field, false, isInterface, indent, parts);
 
-                function addField(field:ClassField, isStatic:Bool) {
-                    if (field.isPublic || isPropertyGetterSetter(cl, field)) {
-                        if (field.doc != null)
-                            parts.push(renderDoc(field.doc, indent));
-
-                        var prefix = if (isStatic) "static " else "";
-
-                        switch [field.kind, field.type] {
-                            case [FMethod(_), TFun(args, ret)]:
-                                parts.push(renderFunction(field.name, args, ret, field.params, indent, prefix));
-
-                            case [FVar(read, write), _]:
-                                switch (write) {
-                                    case AccNo|AccNever|AccCall:
-                                        prefix += "readonly ";
-                                    default:
-                                }
-                                if (read != AccCall) {
-                                    var option = isInterface && isNullable(field) ? "?" : "";
-                                    parts.push('$indent$prefix${field.name}$option: ${renderType(this, field.type)};');
-                                }
-
-                            default:
-                        }
-                    }
-                }
-
-                for (field in cl.fields.get()) {
-                    addField(field, false);
-                }
-
-                for (field in cl.statics.get()) {
-                    addField(field, true);
-                }
+                fields = cl.statics.get();
+                for (field in fields)
+                    if (field.isPublic || isPropertyGetterSetter(fields, field))
+                        addField(field, true, isInterface, indent, parts);
             }
 
             parts.push('$indent}');
@@ -214,13 +180,84 @@ class Generator {
         });
     }
 
+    function generateTypedefDeclaration(t:DefType, anon:AnonType):String {
+        var exposePath = getExposePath(t.meta);
+        if (exposePath == null)
+            exposePath = t.pack.concat([t.name]);
+
+        return wrapInNamespace(exposePath, function(name, indent) {
+            var parts = [];
+
+            if (t.doc != null)
+                parts.push(renderDoc(t.doc, indent));
+
+            var tparams = renderTypeParams(t.params);
+            parts.push('$indent${if (indent == "") "export " else ""}type $name$tparams = {');
+
+            {
+                var indent = indent + "\t";
+
+                var fields = anon.fields;
+                for (field in fields)
+                    if (field.isPublic)
+                        addField(field, false, true, indent, parts);
+            }
+
+            parts.push('$indent}');
+            return parts.join("\n");
+        });
+    }
+
+    function addField(field:ClassField, isStatic:Bool, isInterface:Bool, indent:String, parts:Array<String>) {
+        if (field.doc != null)
+            parts.push(renderDoc(field.doc, indent));
+
+        var prefix = if (isStatic) "static " else "";
+
+        switch [field.kind, field.type] {
+            case [FMethod(_), TFun(args, ret)]:
+                parts.push(renderFunction(field.name, args, ret, field.params, indent, prefix));
+
+            case [FVar(read, write), _]:
+                switch (write) {
+                    case AccNo|AccNever|AccCall:
+                        prefix += "readonly ";
+                    default:
+                }
+                if (read != AccCall) {
+                    var option = isInterface && isNullable(field) ? "?" : "";
+                    parts.push('$indent$prefix${field.name}$option: ${renderType(this, field.type)};');
+                }
+
+            default:
+        }
+    }
+
+    function generateConstructor(cl:ClassType, isInterface:Bool, indent:String, parts:Array<String>) {
+        var privateCtor = true;
+        if (cl.constructor != null) {
+            var ctor = cl.constructor.get();
+            privateCtor = false;
+            if (ctor.doc != null)
+                parts.push(renderDoc(ctor.doc, indent));
+            switch (ctor.type) {
+                case TFun(args, _):
+                    var prefix = if (ctor.isPublic) "" else "private "; // TODO: should this really be protected?
+                    parts.push('${indent}${prefix}constructor(${renderArgs(this, args)});');
+                default:
+                    throw "wtf";
+            }
+        } else if (!isInterface) {
+            parts.push('${indent}private constructor();');
+        }
+    }
+
     // For a given `method` looking like a `get_x`/`set_x`, look for a matching property
-    function isPropertyGetterSetter(cl:ClassType, method:ClassField) {
+    function isPropertyGetterSetter(fields:Array<ClassField>, method:ClassField) {
         var re = new EReg('(get|set)_(.*)', '');
         if (re.match(method.name)) {
             var name = re.matched(2);
-            for (field in cl.fields.get()) if (field.name == name && isProperty(field)) return true;
-            for (field in cl.statics.get()) if (field.name == name && isProperty(field)) return true;
+            for (field in fields) if (field.name == name && isProperty(field)) return true;
         }
         return false;
     }

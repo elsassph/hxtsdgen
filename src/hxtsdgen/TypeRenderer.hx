@@ -6,6 +6,7 @@ using haxe.macro.Tools;
 import hxtsdgen.ArgsRenderer.renderArgs;
 
 class TypeRenderer {
+
     public static function renderType(ctx:Generator, t:Type, paren = false):String {
         inline function wrap(s) return if (paren) '($s)' else s;
 
@@ -22,14 +23,7 @@ class TypeRenderer {
                         name;
 
                     default:
-                        // TODO: handle @:expose'd paths
-                        var dotName = haxe.macro.MacroStringTools.toDotPath(cl.pack, cl.name);
-                        // type parameters
-                        if (params.length > 0) {
-                            var genericParams = params.map(function(p) return renderType(ctx, p));
-                            dotName += '<${genericParams.join(',')}>';
-                        }
-                        dotName;
+                        formatName(ctx, cl, params);
                 }
 
             case TAbstract(_.get() => ab, params):
@@ -70,8 +64,12 @@ class TypeRenderer {
                         renderType(ctx, realT, paren);
 
                     default:
-                        // TODO: generate TS interface declarations
-                        renderType(ctx, dt.type.applyTypeParameters(dt.params, params), paren);
+                        switch (dt.type) {
+                            case TAnonymous(_) if (dt.meta.has(":expose")):
+                                formatName(ctx, dt, params);
+                            default:
+                                renderType(ctx, dt.type.applyTypeParameters(dt.params, params), paren);
+                        }
                 }
 
             case TFun(args, ret):
@@ -86,5 +84,22 @@ class TypeRenderer {
             default:
                 throw 'Cannot render type ${t.toString()} into a TypeScript declaration (TODO?)';
         }
+    }
+
+    static function formatName(ctx:Generator, t: { pack:Array<String>, name:String, meta:MetaAccess }, params:Array<Type>) {
+        if (t.meta.has(":expose")) {
+            var exposePath = Generator.getExposePath(t.meta);
+            if (exposePath != null) {
+                return exposePath.join('.');
+            }
+        }
+
+        var dotName = haxe.macro.MacroStringTools.toDotPath(t.pack, t.name);
+        // type parameters
+        if (params.length > 0) {
+            var genericParams = params.map(function(p) return renderType(ctx, p));
+            dotName += '<${genericParams.join(',')}>';
+        }
+        return dotName;
     }
 }
