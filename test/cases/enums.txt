@@ -1,0 +1,36 @@
+@:expose
+@:enum abstract HttpStatus(Int) {
+  var NotFound = 404;
+  var MethodNotAllowed = 405;
+}
+
+@:expose("T")
+@:enum abstract S(String) {
+  var A = '"a"';
+  var B = 'b\\c';
+  var C = null; // not allowed
+}
+
+@:expose
+@:enum abstract BOOL(Dynamic) { // not allowed
+  var TRUE = true;
+  var FALSE = false;
+}
+
+@:expose
+enum E { // not exported
+  A;
+  B;
+}
+
+----
+
+export const enum HttpStatus {
+	NotFound = 404,
+	MethodNotAllowed = 405,
+}
+
+export const enum T {
+	A = "\"a\"",
+	B = "b\\c",
+}
