@@ -8,7 +8,7 @@ interface X {
 }
 
 @:expose("Y2")
-typedef Y = {
+typedef Y = {>W,
 	var y:Int;
 }
 
@@ -28,7 +28,7 @@ class A {
 @:expose
 class B {
 	public function f():Y {
-		return { y: 1 };
+		return { y: 1, w: 2 };
 	}
 }
 
@@ -46,6 +46,7 @@ export interface X {
 }
 
 export type Y2 = {
+	w: number;
 	y: number;
 }
 

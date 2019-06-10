@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/nadako/hxtsdgen.svg?branch=master)](https://travis-ci.org/nadako/hxtsdgen)
 
-**STATUS: WORK IN PROGRESS, CONTRIBUTIONS WELCOME**
+**STATUS: WIP usable with limitations, feedback welcome!**
 
 This is a [TypeScript declaration file](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 generator for the [Haxe](https://haxe.org/) JavaScript output target.
@@ -14,18 +14,54 @@ containing TypeScript declarations for classes and functions exposed from Haxe u
 
 Just add `-lib hxtsdgen` to compiler arguments and it'll do the rest.
 
+### Supported Haxe features
+
+Certain Haxe features are compiler abstractions and thus may not be possible to translate
+to TypeScript.
+
+- [x] Classes
+- [x] Interfaces
+- [x] [Anonymous Structure](https://haxe.org/manual/types-anonymous-structure.html) Typedefs
+- [ ] Other uses of [typedefs](https://haxe.org/manual/type-system-typedef.html)
+- [x] Properties (as `get_prop/set_prop`)
+- [ ] Native properties (needs compiler support)
+- [ ] Enums (needs compiler support)
+- [x] [Abstract enums](https://haxe.org/manual/types-abstract-enum.html) (see limitations)
+- [ ] Abstract enums as concrete `.ts` enums
+- [ ] More general [abstracts](https://haxe.org/manual/types-abstract.html) (unlikely, excepted possibly for return values)
+
+### Limitations
+
+#### No automatic export
+
+Currently all the types have to be explictly exposed; types used by functions won't be
+automatically exported so everything must be currently annotated for export.
+
+#### Abstract enums
+
+`hxtsdgen` can generate TypeScript [const enums](https://www.typescriptlang.org/docs/handbook/enums.html), which are a pure compiler construction:
+
+> Const enums can only use constant enum expressions and unlike regular enums they are completely removed during compilation. Const enum members are inlined at use sites.
+
+However this comes with important limitations:
+
+- Const enums in `.d.ts` MUST be inlined, which only `tsc` supports in regular compilation,
+- NOT compatible with the `--transpileOnly` option,
+  or **Babel**'s built-in support for TypeScript: both ignore types when producing JS,
+- Why is it important? multi-core compilation or hot-module-replacement need the
+  `--transpileOnly` option,
+- To work around this limitation, we should generate an extra `.ts` enum (TODO) which can
+  be forced to compile to a "regular enum" (`--preserveConstEnums`).
+
 ## Why?
 
 To make using Haxe/JS modules from both JavaScript and TypeScript much easier, of course!
 Just compile your Haxe library to a JS module and use it in TypeScript in a perfectly typed way.
 
-You may ask, how does plain JavaScript benefit here? Well, the thing is, modern JavaScript editors
-such as VS Code and (I think) IDEA, can download and use TypeScript "typings" for providing hints
-while editing JavaScript code.
-
-## How does it look?
+## Howe does it look?
 
 Check out these 3 awesome panes (left-to-right):
+
  * `Main.hx` (Haxe source code)
  * `main.d.ts` (generated TypeScript declarations)
  * `test.ts` (TypeScript source code that uses the declarations)
