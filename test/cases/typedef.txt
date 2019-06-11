@@ -34,9 +34,8 @@ class B {
 
 @:expose
 interface C {
-	function f1():W;
-	function f2():X;
-	function f3():Z;
+	function f1():X;
+	function f2(p:Z):Void;
 }
 
 ----
@@ -66,7 +65,6 @@ export class B {
 }
 
 export interface C {
-	f1(): {w: number};
-	f2(): X;
-	f3(): Z;
+	f1(): X;
+	f2(p: Z): void;
 }

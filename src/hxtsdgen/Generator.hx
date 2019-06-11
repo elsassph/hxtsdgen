@@ -65,7 +65,8 @@ class Generator {
             } else {
                 Context.onAfterGenerate(function() {
                     var gen = new Generator();
-                    var declarations = gen.generate(exposed);
+                    var declarations = gen.generate(exposed, true);
+                    gen.dispose();
 
                     if (includeHeader)
                         declarations.unshift(HEADER);
@@ -76,31 +77,63 @@ class Generator {
         });
     }
 
+    static public var ensureIncluded:Type -> Bool;
+
     var declarations:Array<String>;
+    var autoIncluded:Map<String, Bool>;
 
     function new() {
         this.declarations = [];
+        autoIncluded = new Map<String, Bool>();
+        ensureIncluded = _ensureIncluded;
     }
 
-    function generate(exposed:Array<ExposeKind>) {
+    function dispose() {
+        ensureIncluded = null;
+        autoIncluded = null;
+    }
+
+    function generate(exposed:Array<ExposeKind>, isExport:Bool) {
         for (e in exposed) {
             switch (e) {
                 case EClass(cl):
-                    declarations.push(generateClassDeclaration(cl));
+                    declarations.push(generateClassDeclaration(cl, isExport));
                 case EEnum(t):
-                    declarations.push(generateEnumDeclaration(t));
+                    declarations.push(generateEnumDeclaration(t, isExport));
                 case ETypedef(t, anon):
-                    declarations.push(generateTypedefDeclaration(t, anon));
+                    declarations.push(generateTypedefDeclaration(t, anon, isExport));
                 case EMethod(cl, f):
-                    declarations.push(generateFunctionDeclaration(cl, f));
+                    declarations.push(generateFunctionDeclaration(cl, isExport, f));
             }
         }
         return declarations;
     }
 
+    function _ensureIncluded(t:Type) {
+        // A type is referenced, maybe it needs to be generated as well
+        switch [t, t.follow()] {
+            case [_, TInst(_.get() => cl, _)] if (!cl.meta.has(":expose") && !cl.meta.has(":native")):
+                var key = cl.pack.join('.') + '.' + cl.name;
+                if (!autoIncluded.exists(key)) {
+                    autoIncluded.set(key, true);
+                    generate([EClass(cl)], false); // insert before type processed
+                }
+                return true;
+            case [TType(_.get() => tt, _), TAnonymous(_.get() => anon)]:
+                var key = tt.pack.join('.') + '.' + tt.name;
+                if (!autoIncluded.exists(key)) {
+                    autoIncluded.set(key, true);
+                    generate([ETypedef(tt, anon)], false); // insert before type processed
+                }
+                return true;
+            default:
+        }
+        return false;
+    }
+
     static public function getExposePath(m:MetaAccess):Array<String> {
         switch (m.extract(":expose")) {
-            case []: throw "no @:expose meta!"; // this should not happen
+            case []: return null; // not exposed
             case [{params: []}]: return null;
             case [{params: [macro $v{(s:String)}]}]: return s.split(".");
             case [_]: throw "invalid @:expose argument!"; // probably handled by compiler
@@ -108,20 +141,20 @@ class Generator {
         }
     }
 
-    static function wrapInNamespace(exposedPath:Array<String>, fn:String->String->String):String {
+    static function wrapInNamespace(exposedPath:Array<String>, isExport:Bool, fn:String->String->String):String {
         var name = exposedPath.pop();
         return if (exposedPath.length == 0)
             fn(name, "");
         else
-            'export namespace ${exposedPath.join(".")} {\n${fn(name, "\t")}\n}';
+            '${isExport ? "export " : ""}namespace ${exposedPath.join(".")} {\n${fn(name, "\t")}\n}';
     }
 
-    function generateFunctionDeclaration(cl:ClassType, f:ClassField):String {
+    function generateFunctionDeclaration(cl:ClassType, isExport:Bool, f:ClassField):String {
         var exposePath = getExposePath(f.meta);
         if (exposePath == null)
             exposePath = cl.pack.concat([cl.name, f.name]);
 
-        return wrapInNamespace(exposePath, function(name, indent) {
+        return wrapInNamespace(exposePath, isExport, function(name, indent) {
             var parts = [];
             if (f.doc != null)
                 parts.push(renderDoc(f.doc, indent));
@@ -129,7 +162,7 @@ class Generator {
             switch [f.kind, f.type] {
                 case [FMethod(_), TFun(args, ret)]:
                     var prefix =
-                        if (indent == "") // so we're not in a namespace (meh, this is hacky)
+                        if (indent == "" && isExport)
                             "export function "
                         else
                             "function ";
@@ -147,18 +180,18 @@ class Generator {
         return '$indent$prefix$name$tparams(${renderArgs(this, args)}): ${renderType(this, ret)};';
     }
 
-    static function renderTypeParams(params:Array<TypeParameter>):String {
+    function renderTypeParams(params:Array<TypeParameter>):String {
         return
             if (params.length == 0) ""
             else "<" + params.map(function(t) return return t.name).join(", ") + ">";
     }
 
-    function generateClassDeclaration(cl:ClassType):String {
+    function generateClassDeclaration(cl:ClassType, isExport:Bool):String {
         var exposePath = getExposePath(cl.meta);
         if (exposePath == null)
             exposePath = cl.pack.concat([cl.name]);
 
-        return wrapInNamespace(exposePath, function(name, indent) {
+        return wrapInNamespace(exposePath, isExport, function(name, indent) {
             var parts = [];
 
             if (cl.doc != null)
@@ -169,7 +202,8 @@ class Generator {
             var tparams = renderTypeParams(cl.params);
             var isInterface = cl.isInterface;
             var type = isInterface ? 'interface' : 'class';
-            parts.push('$indent${if (indent == "") "export " else ""}$type $name$tparams {');
+            var export = indent == "" && isExport ? "export " : "";
+            parts.push('$indent${export}$type $name$tparams {');
 
             {
                 var indent = indent + "\t";
@@ -191,7 +225,7 @@ class Generator {
         });
     }
 
-    function generateEnumDeclaration(t:ClassType):String {
+    function generateEnumDeclaration(t:ClassType, isExport:Bool):String {
         // TypeScript `const enum` are pure typing constructs (e.g. don't exist in JS either)
         // so it matches Haxe abstract enum well.
 
@@ -206,13 +240,14 @@ class Generator {
         if (exposePath == null)
             exposePath = bt.pack.concat([bt.name]);
 
-        return wrapInNamespace(exposePath, function(name, indent) {
+        return wrapInNamespace(exposePath, isExport, function(name, indent) {
             var parts = [];
 
             if (t.doc != null)
                 parts.push(renderDoc(t.doc, indent));
 
-            parts.push('$indent${if (indent == "") "export " else ""}const enum $name {');
+            var export = indent == "" && isExport ? "export " : "";
+            parts.push('$indent${export}const enum $name {');
 
             {
                 var indent = indent + "\t";
@@ -229,19 +264,20 @@ class Generator {
         });
     }
 
-    function generateTypedefDeclaration(t:DefType, anon:AnonType):String {
+    function generateTypedefDeclaration(t:DefType, anon:AnonType, isExport:Bool):String {
         var exposePath = getExposePath(t.meta);
         if (exposePath == null)
             exposePath = t.pack.concat([t.name]);
 
-        return wrapInNamespace(exposePath, function(name, indent) {
+        return wrapInNamespace(exposePath, isExport, function(name, indent) {
             var parts = [];
 
             if (t.doc != null)
                 parts.push(renderDoc(t.doc, indent));
 
             var tparams = renderTypeParams(t.params);
-            parts.push('$indent${if (indent == "") "export " else ""}type $name$tparams = {');
+            var export = indent == "" && isExport ? "export " : "";
+            parts.push('$indent${export}type $name$tparams = {');
 
             {
                 var indent = indent + "\t";

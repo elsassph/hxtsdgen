@@ -4,6 +4,7 @@ import haxe.macro.Type;
 using haxe.macro.Tools;
 
 import hxtsdgen.ArgsRenderer.renderArgs;
+import hxtsdgen.Generator.ensureIncluded;
 
 class TypeRenderer {
 
@@ -23,6 +24,7 @@ class TypeRenderer {
                         name;
 
                     default:
+                        ensureIncluded(t);
                         formatName(ctx, cl, params);
                 }
 
@@ -65,7 +67,7 @@ class TypeRenderer {
 
                     default:
                         switch (dt.type) {
-                            case TAnonymous(_) if (dt.meta.has(":expose")):
+                            case TAnonymous(_) if (dt.meta.has(":expose") || ensureIncluded(t)):
                                 formatName(ctx, dt, params);
                             default:
                                 renderType(ctx, dt.type.applyTypeParameters(dt.params, params), paren);

@@ -1,0 +1,49 @@
+@:expose
+interface A {
+	function f1(): B;
+	function f2(): C;
+	function f3(e:E): D;
+	function f4(e:E): js.Promise<F>;
+}
+
+interface B {
+}
+
+typedef C = {
+	var n: Int;
+}
+
+@:expose
+interface D {
+}
+
+interface E {
+}
+
+interface F {
+}
+
+----
+
+interface B {
+}
+
+type C = {
+	n: number;
+}
+
+interface E {
+}
+
+interface F {
+}
+
+export interface A {
+	f1(): B;
+	f2(): C;
+	f3(e: E): D;
+	f4(e: E): Promise<F>;
+}
+
+export interface D {
+}
