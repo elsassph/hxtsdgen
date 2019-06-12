@@ -30,6 +30,14 @@ interface A {
 
 ----
 
+import { HttpStatus, S2 } from "HxTsdGenTestCase-enums.ts";
+
+export interface A {
+	f(p: HttpStatus): S2;
+}
+
+----
+
 export const enum HttpStatus {
 	NotFound = 404,
 	MethodNotAllowed = 405,
@@ -38,8 +46,4 @@ export const enum HttpStatus {
 export const enum S2 {
 	A = "\"a\"",
 	B = "b\\c",
-}
-
-export interface A {
-	f(p: HttpStatus): S2;
 }

@@ -38,6 +38,12 @@ interface C {
 	function f2(p:Z):Void;
 }
 
+interface D {
+}
+
+@:expose
+typedef E = D; // not supported
+
 ----
 
 export interface X {

@@ -4,6 +4,7 @@ interface A {
 	function f2(): C;
 	function f3(e:E): D;
 	function f4(e:E): js.Promise<F>;
+	function f5(p:G): H;
 }
 
 interface B {
@@ -23,6 +24,16 @@ interface E {
 interface F {
 }
 
+@:enum abstract G(Int) {
+	var G1 = 1;
+	var G2 = 2;
+}
+
+@:enum abstract H(String) {
+	var H1 = "1";
+	var H2 = "2";
+}
+
 ----
 
 interface B {
@@ -38,11 +49,22 @@ interface E {
 interface F {
 }
 
+const enum G {
+	G1 = 1,
+	G2 = 2,
+}
+
+const enum H {
+	H1 = "1",
+	H2 = "2",
+}
+
 export interface A {
 	f1(): B;
 	f2(): C;
 	f3(e: E): D;
 	f4(e: E): Promise<F>;
+	f5(p: G): H;
 }
 
 export interface D {

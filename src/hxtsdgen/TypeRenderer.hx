@@ -47,8 +47,9 @@ class TypeRenderer {
                         '${renderType(ctx, aT, true)} | ${renderType(ctx, bT, true)}';
 
                     default:
-                        // TODO: do we want to have a `type Name = Underlying` here maybe?
-                        renderType(ctx, ab.type.applyTypeParameters(ab.params, params), paren);
+                        // TODO: do we want to handle more `type Name = Underlying` cases?
+                        if (Generator.GEN_ENUM_TS || ab.meta.has(":expose") || ensureIncluded(t)) formatName(ctx, ab, params);
+                        else renderType(ctx, ab.type.applyTypeParameters(ab.params, params), paren);
                 }
 
             case TAnonymous(_.get() => anon):
@@ -67,7 +68,7 @@ class TypeRenderer {
 
                     default:
                         switch (dt.type) {
-                            case TAnonymous(_) if (dt.meta.has(":expose") || ensureIncluded(t)):
+                            case TAnonymous(_) if (Generator.GEN_ENUM_TS || dt.meta.has(":expose") || ensureIncluded(t)):
                                 formatName(ctx, dt, params);
                             default:
                                 renderType(ctx, dt.type.applyTypeParameters(dt.params, params), paren);
