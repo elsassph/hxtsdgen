@@ -271,7 +271,7 @@ class Generator {
             if (t.doc != null)
                 parts.push(renderDoc(t.doc, indent));
 
-            var export = isExport ? "export " : "";
+            var export = isExport ? "export " : (exposePath.length == 0 ? "declare " : "");
             parts.push('$indent${export}const enum $name {');
 
             {
@@ -285,7 +285,14 @@ class Generator {
             }
 
             if (GEN_ENUM_TS && isExport) {
-                etsExports.push(name);
+                // this will be imported by the d.ts
+                // - no package: enum name
+                // - with package: root package (com.foo.Bar -> com)
+                if (exposePath.length == 0) etsExports.push(name);
+                else {
+                    var ns = exposePath[0];
+                    if (etsExports.indexOf(ns) < 0) etsExports.push(ns);
+                }
             }
 
             parts.push('$indent}');

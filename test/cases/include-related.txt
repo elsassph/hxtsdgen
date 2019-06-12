@@ -49,12 +49,12 @@ interface E {
 interface F {
 }
 
-const enum G {
+declare const enum G {
 	G1 = 1,
 	G2 = 2,
 }
 
-const enum H {
+declare const enum H {
 	H1 = "1",
 	H2 = "2",
 }
