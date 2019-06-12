@@ -27,7 +27,7 @@ to TypeScript.
 - [ ] Native properties (needs compiler support)
 - [ ] Enums (needs compiler support)
 - [x] [Abstract enums](https://haxe.org/manual/types-abstract-enum.html) (see limitations)
-- [ ] Abstract enums as concrete `.ts` enums
+- [x] Abstract enums as concrete `.ts` enums (`-D hxtsdgen_enums_ts`)
 - [ ] More general [abstracts](https://haxe.org/manual/types-abstract.html) (unlikely, excepted possibly for return values)
 
 ### Limitations
@@ -46,12 +46,11 @@ automatically exported so everything must be currently annotated for export.
 However this comes with important limitations:
 
 - Const enums in `.d.ts` MUST be inlined, which only `tsc` supports in regular compilation,
-- NOT compatible with the `--transpileOnly` option,
+- This is NOT compatible with the `--transpileOnly` option (needed for hot-reload),
   or **Babel**'s built-in support for TypeScript: both ignore types when producing JS,
-- Why is it important? multi-core compilation or hot-module-replacement need the
-  `--transpileOnly` option,
-- To work around this limitation, we should generate an extra `.ts` enum (TODO) which can
-  be forced to compile to a "regular enum" (`--preserveConstEnums`).
+- To work around this limitation, using option `-D hxtsdgen_enums_ts`, hxtsdgen can generate
+  an extra `.ts` file including the `const enum`s, which in turn can be forced to compile to a
+  "regular enum" using the option `--preserveConstEnums`.
 
 ## Why?
 
