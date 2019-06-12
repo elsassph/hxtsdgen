@@ -15,7 +15,7 @@ interface A {
 
 ----
 
-import { G, H } from "HxTsdGenTestCase-enums.ts";
+import { G, H } from "./include-related-enums-enums";
 
 export interface A {
 	f1(p: G): H;

@@ -76,7 +76,7 @@ class Generator {
 
                         // import enum from the d.ts
                         var exports = declarations.exports.join(', ');
-                        declarations.dts.unshift('import { $exports } from "$outName-enums.ts";');
+                        declarations.dts.unshift('import { $exports } from "./$outName-enums";');
                     }
 
                     if (declarations.dts.length > 0) {
@@ -170,12 +170,12 @@ class Generator {
         }
     }
 
-    static function wrapInNamespace(exposedPath:Array<String>, isExport:Bool, fn:String->String->String):String {
+    static function wrapInNamespace(exposedPath:Array<String>, fn:String->String->String):String {
         var name = exposedPath.pop();
         return if (exposedPath.length == 0)
             fn(name, "");
         else
-            '${isExport ? "export " : ""}namespace ${exposedPath.join(".")} {\n${fn(name, "\t")}\n}';
+            'export namespace ${exposedPath.join(".")} {\n${fn(name, "\t")}\n}';
     }
 
     function generateFunctionDeclaration(cl:ClassType, isExport:Bool, f:ClassField):String {
@@ -183,18 +183,14 @@ class Generator {
         if (exposePath == null)
             exposePath = cl.pack.concat([cl.name, f.name]);
 
-        return wrapInNamespace(exposePath, isExport, function(name, indent) {
+        return wrapInNamespace(exposePath, function(name, indent) {
             var parts = [];
             if (f.doc != null)
                 parts.push(renderDoc(f.doc, indent));
 
             switch [f.kind, f.type] {
                 case [FMethod(_), TFun(args, ret)]:
-                    var prefix =
-                        if (indent == "" && isExport)
-                            "export function "
-                        else
-                            "function ";
+                    var prefix = isExport ? "export function " : "function ";
                     parts.push(renderFunction(name, args, ret, f.params, indent, prefix));
                 default:
                     throw new Error("This kind of field cannot be exposed to JavaScript", f.pos);
@@ -220,7 +216,7 @@ class Generator {
         if (exposePath == null)
             exposePath = cl.pack.concat([cl.name]);
 
-        return wrapInNamespace(exposePath, isExport, function(name, indent) {
+        return wrapInNamespace(exposePath, function(name, indent) {
             var parts = [];
 
             if (cl.doc != null)
@@ -231,7 +227,7 @@ class Generator {
             var tparams = renderTypeParams(cl.params);
             var isInterface = cl.isInterface;
             var type = isInterface ? 'interface' : 'class';
-            var export = indent == "" && isExport ? "export " : "";
+            var export = isExport ? "export " : "";
             parts.push('$indent${export}$type $name$tparams {');
 
             {
@@ -269,13 +265,13 @@ class Generator {
         if (exposePath == null)
             exposePath = bt.pack.concat([bt.name]);
 
-        return wrapInNamespace(exposePath, isExport, function(name, indent) {
+        return wrapInNamespace(exposePath, function(name, indent) {
             var parts = [];
 
             if (t.doc != null)
                 parts.push(renderDoc(t.doc, indent));
 
-            var export = indent == "" && isExport ? "export " : "";
+            var export = isExport ? "export " : "";
             parts.push('$indent${export}const enum $name {');
 
             {
@@ -302,14 +298,14 @@ class Generator {
         if (exposePath == null)
             exposePath = t.pack.concat([t.name]);
 
-        return wrapInNamespace(exposePath, isExport, function(name, indent) {
+        return wrapInNamespace(exposePath, function(name, indent) {
             var parts = [];
 
             if (t.doc != null)
                 parts.push(renderDoc(t.doc, indent));
 
             var tparams = renderTypeParams(t.params);
-            var export = indent == "" && isExport ? "export " : "";
+            var export = isExport ? "export " : "";
             parts.push('$indent${export}type $name$tparams = {');
 
             {

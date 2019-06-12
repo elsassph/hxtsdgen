@@ -11,9 +11,10 @@ class Main {
 
         function processFile(file:String, genEnums:Bool) {
             total++;
-            println('Running test case `$file`...');
+            var name = file.split('.txt')[0];
+            println('Running test case `$name`...');
             var testCase = readTestCase('$programDir/cases/$file', genEnums);
-            var tsOut = runTestCase(testCase.hx, genEnums);
+            var tsOut = runTestCase(name, testCase.hx, genEnums);
             if (tsOut == null) {
                 println("Haxe compilation failed!");
                 println("---");
@@ -55,12 +56,14 @@ class Main {
         return result;
     }
 
-    static function runTestCase(hxCode:String, genEnums:Bool) {
+    static function runTestCase(name:String, hxCode:String, genEnums:Bool) {
         var cp = Os.tmpdir();
-        var hxFile = '$cp/HxTsdGenTestCase.hx';
-        var outFile = '$cp/HxTsdGenTestCase.js';
-        var dtsFile = '$cp/HxTsdGenTestCase.d.ts';
-        var etsFile = '$cp/HxTsdGenTestCase-enums.ts';
+        var pkg = getPackage(hxCode);
+        if (pkg.dir != null) FileSystem.createDirectory('$cp/${pkg.dir}');
+        var hxFile = pkg.dir != null ? '$cp/${pkg.dir}/HxTsdGenTestCase.hx' : '$cp/HxTsdGenTestCase.hx';
+        var outFile = '$cp/$name.js';
+        var dtsFile = '$cp/$name.d.ts';
+        var etsFile = '$cp/$name-enums.ts';
         File.saveContent(hxFile, hxCode);
 
         var args = [
@@ -68,7 +71,7 @@ class Main {
             "-lib", "hxtsdgen",
             "-js", outFile,
             "-D", "hxtsdgen_skip_header",
-            "HxTsdGenTestCase"
+            '${pkg.dot}HxTsdGenTestCase'
         ];
         if (genEnums) args = args.concat(["-D", "hxtsdgen_enums_ts"]);
         var code = Sys.command("haxe", args);
@@ -80,12 +83,26 @@ class Main {
         }
 
         try {
+            var programDir = haxe.io.Path.directory(Sys.programPath());
             FileSystem.deleteFile(hxFile);
-            FileSystem.deleteFile(outFile);
-            if (FileSystem.exists(dtsFile)) FileSystem.deleteFile(dtsFile);
-            if (FileSystem.exists(etsFile)) FileSystem.deleteFile(etsFile);
+            FileSystem.createDirectory('$programDir/out');
+            FileSystem.rename(outFile, '$programDir/out/$name.js');
+            if (FileSystem.exists(dtsFile)) FileSystem.rename(dtsFile, '$programDir/out/$name.d.ts');
+            if (FileSystem.exists(etsFile)) FileSystem.rename(etsFile, '$programDir/out/$name-enums.ts');
         } catch (_:Any) {}
 
         return code == 0 ? { dts: dts, ets: ets } : null;
+    }
+
+    static function getPackage(hxCode:String) {
+        var rePkg = ~/package ([a-z0-9.]+);/i;
+        if (rePkg.match(hxCode)) {
+            var p = rePkg.matched(1);
+            return {
+                dir: p.split('.').join('/'),
+                dot: p + '.'
+            };
+        }
+        return { dir: null, dot: "" };
     }
 }

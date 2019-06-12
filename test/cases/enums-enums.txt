@@ -30,7 +30,7 @@ interface A {
 
 ----
 
-import { HttpStatus, S2 } from "HxTsdGenTestCase-enums.ts";
+import { HttpStatus, S2 } from "./enums-enums-enums";
 
 export interface A {
 	f(p: HttpStatus): S2;
