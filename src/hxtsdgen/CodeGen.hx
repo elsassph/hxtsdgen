@@ -28,7 +28,7 @@ class CodeGen {
         etsDecl = Generator.GEN_ENUM_TS ? [] : dtsDecl;
         etsExports = [];
 
-        generateSome(selector.exposed, true);
+        generateSome(selector.exposed);
 
         return {
             dts: dtsDecl,
@@ -37,18 +37,18 @@ class CodeGen {
         };
     }
 
-    function generateSome(decl:Array<ExposeKind>, isExport:Bool) {
+    function generateSome(decl:Array<ExposeKind>) {
         for (e in decl) {
             switch (e) {
                 case EClass(cl):
-                    dtsDecl.push(generateClassDeclaration(cl, isExport));
+                    dtsDecl.push(generateClassDeclaration(cl, true));
                 case EEnum(t):
-                    var eDecl = generateEnumDeclaration(t, isExport);
+                    var eDecl = generateEnumDeclaration(t, true);
                     if (eDecl != "") etsDecl.push(eDecl);
                 case ETypedef(t, anon):
-                    dtsDecl.push(generateTypedefDeclaration(t, anon, isExport));
+                    dtsDecl.push(generateTypedefDeclaration(t, anon, true));
                 case EMethod(cl, f):
-                    dtsDecl.push(generateFunctionDeclaration(cl, isExport, f));
+                    dtsDecl.push(generateFunctionDeclaration(cl, true, f));
             }
         }
     }

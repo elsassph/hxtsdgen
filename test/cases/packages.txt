@@ -20,7 +20,7 @@ interface A {
 ----
 
 export namespace org {
-	const enum B {
+	export const enum B {
 		B1 = 1,
 		B2 = 2,
 	}

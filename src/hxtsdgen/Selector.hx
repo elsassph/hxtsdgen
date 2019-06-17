@@ -8,7 +8,7 @@ using haxe.macro.Tools;
 class Selector {
 
     public var exposed:Array<ExposeKind>;
-    public var onAutoInclude:Array<ExposeKind> -> Bool -> Void;
+    public var onAutoInclude:Array<ExposeKind> -> Void;
 
     var autoIncluded:Map<String, Bool>;
 
@@ -50,14 +50,14 @@ class Selector {
                 var key = cl.pack.join('.') + '.' + cl.name;
                 if (!autoIncluded.exists(key)) {
                     autoIncluded.set(key, true);
-                    onAutoInclude([EClass(cl)], false);
+                    onAutoInclude([EClass(cl)]);
                 }
                 return true;
             case [TType(_.get() => tt, _), TAnonymous(_.get() => anon)]:
                 var key = tt.pack.join('.') + '.' + tt.name;
                 if (!autoIncluded.exists(key)) {
                     autoIncluded.set(key, true);
-                    onAutoInclude([ETypedef(tt, anon)], false);
+                    onAutoInclude([ETypedef(tt, anon)]);
                 }
                 return true;
             case [TAbstract(_.get() => ab, params), _]:
@@ -66,7 +66,7 @@ class Selector {
                     var key = cl.pack.join('.') + '.' + cl.name;
                     if (!autoIncluded.exists(key)) {
                         autoIncluded.set(key, true);
-                        onAutoInclude([EEnum(cl)], Generator.GEN_ENUM_TS);
+                        onAutoInclude([EEnum(cl)]);
                     }
                     return true;
                 }

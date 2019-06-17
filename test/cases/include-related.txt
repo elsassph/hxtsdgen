@@ -36,25 +36,25 @@ interface F {
 
 ----
 
-interface B {
+export interface B {
 }
 
-type C = {
+export type C = {
 	n: number;
 }
 
-interface E {
+export interface E {
 }
 
-interface F {
+export interface F {
 }
 
-declare const enum G {
+export const enum G {
 	G1 = 1,
 	G2 = 2,
 }
 
-declare const enum H {
+export const enum H {
 	H1 = "1",
 	H2 = "2",
 }
