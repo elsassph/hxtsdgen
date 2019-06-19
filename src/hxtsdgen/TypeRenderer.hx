@@ -1,13 +1,13 @@
 package hxtsdgen;
 
 import haxe.macro.Type;
-using haxe.macro.Tools;
-
 import hxtsdgen.ArgsRenderer.renderArgs;
+
+using haxe.macro.Tools;
 
 class TypeRenderer {
 
-    public static function renderType(ctx:Generator, t:Type, paren = false):String {
+    public static function renderType(ctx:Selector, t:Type, paren = false):String {
         inline function wrap(s) return if (paren) '($s)' else s;
 
         return switch (t) {
@@ -23,6 +23,7 @@ class TypeRenderer {
                         name;
 
                     default:
+                        ctx.ensureIncluded(t);
                         formatName(ctx, cl, params);
                 }
 
@@ -45,8 +46,9 @@ class TypeRenderer {
                         '${renderType(ctx, aT, true)} | ${renderType(ctx, bT, true)}';
 
                     default:
-                        // TODO: do we want to have a `type Name = Underlying` here maybe?
-                        renderType(ctx, ab.type.applyTypeParameters(ab.params, params), paren);
+                        // TODO: do we want to handle more `type Name = Underlying` cases?
+                        if (Generator.GEN_ENUM_TS || ab.meta.has(":expose") || ctx.ensureIncluded(t)) formatName(ctx, ab, params);
+                        else renderType(ctx, ab.type.applyTypeParameters(ab.params, params), paren);
                 }
 
             case TAnonymous(_.get() => anon):
@@ -65,7 +67,7 @@ class TypeRenderer {
 
                     default:
                         switch (dt.type) {
-                            case TAnonymous(_) if (dt.meta.has(":expose")):
+                            case TAnonymous(_) if (Generator.GEN_ENUM_TS || dt.meta.has(":expose") || ctx.ensureIncluded(t)):
                                 formatName(ctx, dt, params);
                             default:
                                 renderType(ctx, dt.type.applyTypeParameters(dt.params, params), paren);
@@ -86,9 +88,9 @@ class TypeRenderer {
         }
     }
 
-    static function formatName(ctx:Generator, t: { pack:Array<String>, name:String, meta:MetaAccess }, params:Array<Type>) {
+    static function formatName(ctx:Selector, t: { pack:Array<String>, name:String, meta:MetaAccess }, params:Array<Type>) {
         if (t.meta.has(":expose")) {
-            var exposePath = Generator.getExposePath(t.meta);
+            var exposePath = CodeGen.getExposePath(t.meta);
             if (exposePath != null) {
                 return exposePath.join('.');
             }

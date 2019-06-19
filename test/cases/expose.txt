@@ -29,17 +29,17 @@ export class some {
 }
 
 export namespace my.pack {
-	class A {
+	export class A {
 		private constructor();
 	}
 }
 
 export namespace F {
-	function f(): void;
+	export function f(): void;
 }
 
 export function g(): void;
 
 export namespace my.pack {
-	function h(): void;
+	export function h(): void;
 }

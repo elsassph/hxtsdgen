@@ -1,0 +1,71 @@
+@:expose
+interface A {
+	function f1(): B;
+	function f2(): C;
+	function f3(e:E): D;
+	function f4(e:E): js.Promise<F>;
+	function f5(p:G): H;
+}
+
+interface B {
+}
+
+typedef C = {
+	var n: Int;
+}
+
+@:expose
+interface D {
+}
+
+interface E {
+}
+
+interface F {
+}
+
+@:enum abstract G(Int) {
+	var G1 = 1;
+	var G2 = 2;
+}
+
+@:enum abstract H(String) {
+	var H1 = "1";
+	var H2 = "2";
+}
+
+----
+
+export interface B {
+}
+
+export type C = {
+	n: number;
+}
+
+export interface E {
+}
+
+export interface F {
+}
+
+export const enum G {
+	G1 = 1,
+	G2 = 2,
+}
+
+export const enum H {
+	H1 = "1",
+	H2 = "2",
+}
+
+export interface A {
+	f1(): B;
+	f2(): C;
+	f3(e: E): D;
+	f4(e: E): Promise<F>;
+	f5(p: G): H;
+}
+
+export interface D {
+}

@@ -4,7 +4,7 @@
 	var MethodNotAllowed = 405;
 }
 
-@:expose("S2")
+@:expose("org.foo.S2")
 @:enum abstract S(String) {
 	var A = '"a"';
 	var B = 'b\\c';
@@ -30,16 +30,22 @@ interface A {
 
 ----
 
+import { HttpStatus, org } from "./enums-enums-enums";
+
+export interface A {
+	f(p: HttpStatus): org.foo.S2;
+}
+
+----
+
 export const enum HttpStatus {
 	NotFound = 404,
 	MethodNotAllowed = 405,
 }
 
-export const enum S2 {
-	A = "\"a\"",
-	B = "b\\c",
-}
-
-export interface A {
-	f(p: HttpStatus): S2;
+export namespace org.foo {
+	export const enum S2 {
+		A = "\"a\"",
+		B = "b\\c",
+	}
 }

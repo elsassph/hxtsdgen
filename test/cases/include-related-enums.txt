@@ -1,0 +1,34 @@
+@:expose
+interface A {
+	function f1(p: G): H;
+}
+
+@:enum abstract G(Int) {
+	var G1 = 1;
+	var G2 = 2;
+}
+
+@:enum abstract H(String) {
+	var H1 = "1";
+	var H2 = "2";
+}
+
+----
+
+import { G, H } from "./include-related-enums-enums";
+
+export interface A {
+	f1(p: G): H;
+}
+
+----
+
+export const enum G {
+	G1 = 1,
+	G2 = 2,
+}
+
+export const enum H {
+	H1 = "1",
+	H2 = "2",
+}

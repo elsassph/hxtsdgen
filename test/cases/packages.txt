@@ -1,0 +1,40 @@
+package org;
+
+@:expose
+interface A {
+	function f(p: C): B;
+}
+
+@:enum abstract B(Int) {
+	var B1 = 1;
+	var B2 = 2;
+}
+
+@:expose
+@:enum abstract C(String) {
+	var C1 = "1";
+	var C2 = "2";
+}
+
+
+----
+
+export namespace org {
+	export const enum B {
+		B1 = 1,
+		B2 = 2,
+	}
+}
+
+export namespace org {
+	export interface A {
+		f(p: org.C): org.B;
+	}
+}
+
+export namespace org {
+	export const enum C {
+		C1 = "1",
+		C2 = "2",
+	}
+}
