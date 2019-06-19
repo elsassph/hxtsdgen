@@ -3,8 +3,8 @@
     "description": "TypeScript declaration generator for Haxe/JS",
     "url": "https://github.com/nadako/hxtsdgen",
     "license": "MIT",
-    "contributors": ["nadako"],
-    "version": "0.0.1",
+    "contributors": ["elsassph", "nadako"],
+    "version": "0.1.1",
     "releasenote": "Initial release",
     "tags": ["js", "extern"],
     "classPath": "src"

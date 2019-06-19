@@ -1,4 +1,7 @@
+-lib hxnodejs
 -cp src
---macro include("hxtsdgen")
--neko main.n
+-cp test
+Main
+
+-js temp.js
 --no-output
