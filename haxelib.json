@@ -4,7 +4,7 @@
     "url": "https://github.com/nadako/hxtsdgen",
     "license": "MIT",
     "contributors": ["elsassph", "nadako"],
-    "version": "0.1.1",
+    "version": "0.1.2",
     "releasenote": "Initial release",
     "tags": ["js", "extern"],
     "classPath": "src"
