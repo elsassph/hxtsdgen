@@ -55,11 +55,15 @@ class CodeGen {
 
     static public function getExposePath(m:MetaAccess):Array<String> {
         return switch (m.extract(":expose")) {
-            case []: null; // not exposed
-            case [{params: []}]: null;
             case [{params: [macro $v{(s:String)}]}]: s.split(".");
-            case [_]: throw "invalid @:expose argument!"; // probably handled by compiler
-            case _: throw "multiple @:expose metadata!"; // is this okay?
+            case _: m.has(":native") ? getNativePath(m) : null;
+        }
+    }
+
+    static function getNativePath(m:MetaAccess):Array<String> {
+        return switch (m.extract(":native")) {
+            case [{params: [macro $v{(s:String)}]}]: s.split(".");
+            case _: null;
         }
     }
 
