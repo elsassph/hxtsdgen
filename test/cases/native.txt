@@ -1,0 +1,37 @@
+@:expose("B")
+@:native("C")
+class A {}
+
+@:expose
+@:native("E")
+class D {}
+
+@:native("G")
+class F {}
+
+@:expose
+class H {
+	@:expose
+	@:native("i")
+	static function h(a0: F, a1: js.html.HtmlElement) {}
+}
+
+----
+
+export class B {
+	private constructor();
+}
+
+export class E {
+	private constructor();
+}
+
+export class H {
+	private constructor();
+}
+
+export class G {
+	private constructor();
+}
+
+export function i(a0: G, a1: HTMLHtmlElement): void;

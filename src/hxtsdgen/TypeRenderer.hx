@@ -89,14 +89,9 @@ class TypeRenderer {
     }
 
     static function formatName(ctx:Selector, t: { pack:Array<String>, name:String, meta:MetaAccess }, params:Array<Type>) {
-        if (t.meta.has(":expose")) {
-            var exposePath = CodeGen.getExposePath(t.meta);
-            if (exposePath != null) {
-                return exposePath.join('.');
-            }
-        }
-
-        var dotName = haxe.macro.MacroStringTools.toDotPath(t.pack, t.name);
+        var exposePath = CodeGen.getExposePath(t.meta);
+        if (exposePath == null) exposePath = t.pack.concat([t.name]);
+        var dotName = exposePath.join('.');
         // type parameters
         if (params.length > 0) {
             var genericParams = params.map(function(p) return renderType(ctx, p));

@@ -46,7 +46,7 @@ class Selector {
     public function ensureIncluded(t:Type) {
         // A type is referenced, maybe it needs to be generated as well
         switch [t, t.follow()] {
-            case [_, TInst(_.get() => cl, _)] if (!cl.meta.has(":expose") && !cl.meta.has(":native")):
+            case [_, TInst(_.get() => cl, _)] if (!cl.isExtern && !cl.meta.has(":expose")):
                 var key = cl.pack.join('.') + '.' + cl.name;
                 if (!autoIncluded.exists(key)) {
                     autoIncluded.set(key, true);
