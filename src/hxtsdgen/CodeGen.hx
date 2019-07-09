@@ -125,11 +125,12 @@ class CodeGen {
             var isInterface = cl.isInterface;
             var type = isInterface ? 'interface' : 'class';
             var export = isExport ? "export " : "";
-            parts.push('$indent${export}$type $name$tparams {');
+            var inherit = getInheritance(cl);
+            parts.push('$indent${export}$type $name$tparams$inherit {');
 
             {
                 var indent = indent + "\t";
-                generateConstructor(cl, isInterface, indent, parts);
+                if (!isInterface) generateConstructor(cl, isInterface, indent, parts);
 
                 var fields = cl.fields.get();
                 for (field in fields)
@@ -145,6 +146,36 @@ class CodeGen {
             parts.push('$indent}');
             return parts.join("\n");
         });
+    }
+
+    function classIsInterface(cl:ClassType) {
+        if (cl.isInterface) return true;
+
+        var exposed = cl.meta.has(":expose");
+        if (!cl.isInterface && !exposed) {
+            haxe.macro.Context.warning('Exposing referenced class ${cl.name} as interface', cl.pos);
+            return true; // expose interface
+        }
+        return false;
+    }
+
+    function getInheritance(t:ClassType) {
+        var sup = t.superClass;
+        var ext = '';
+        if (sup != null) {
+            var cl = sup.t.get();
+            ext = ' extends ${cl.name}${renderTypeParams(cl.params)}';
+        }
+        var ints = '';
+        if (t.interfaces != null && t.interfaces.length > 0) {
+            var names = t.interfaces.map(function (item) {
+                var cl = item.t.get();
+                return '${cl.name}${renderTypeParams(cl.params)}';
+            });
+            if (t.isInterface) ints = ' extends ${names.join(', ')}';
+            else ints = ' implements ${names.join(', ')}';
+        }
+        return '$ext$ints';
     }
 
     function generateEnumDeclaration(t:ClassType, isExport:Bool):String {
