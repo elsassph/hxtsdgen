@@ -15,8 +15,10 @@ class CodeGen {
 
     var selector:Selector;
     var dtsDecl:Array<String>;
+    var itsDecl:Array<String>;
     var etsDecl:Array<String>;
     var etsExports:Array<String>;
+    var itsExports:Array<String>;
 
     public function new(selector:Selector) {
         this.selector = selector;
@@ -26,6 +28,8 @@ class CodeGen {
     public function generate() {
         dtsDecl = [];
         etsDecl = Generator.GEN_ENUM_TS ? [] : dtsDecl;
+        itsDecl = Generator.GEN_TYPES_DTS ? [] : dtsDecl;
+        itsExports = [];
         etsExports = [];
 
         generateSome(selector.exposed);
@@ -33,7 +37,9 @@ class CodeGen {
         return {
             dts: dtsDecl,
             ets: etsDecl,
-            exports: etsExports
+            its: itsDecl,
+            etsExports: etsExports,
+            itsExports: itsExports
         };
     }
 
@@ -41,12 +47,15 @@ class CodeGen {
         for (e in decl) {
             switch (e) {
                 case EClass(cl):
-                    dtsDecl.push(generateClassDeclaration(cl, true));
+                    if (cl.isInterface)
+                        itsDecl.push(generateClassDeclaration(cl, true));
+                    else
+                        dtsDecl.push(generateClassDeclaration(cl, true));
                 case EEnum(t):
                     var eDecl = generateEnumDeclaration(t, true);
                     if (eDecl != "") etsDecl.push(eDecl);
                 case ETypedef(t, anon):
-                    dtsDecl.push(generateTypedefDeclaration(t, anon, true));
+                    itsDecl.push(generateTypedefDeclaration(t, anon, true));
                 case EMethod(cl, f):
                     dtsDecl.push(generateFunctionDeclaration(cl, true, f));
             }
@@ -108,6 +117,32 @@ class CodeGen {
             else "<" + params.map(function(t) return return t.name).join(", ") + ">";
     }
 
+    function addEnumExportRef(exposePath:Array<String>, name:String) {
+        if (Generator.GEN_ENUM_TS) {
+            // this will be imported by the d.ts
+            // - no package: type name
+            // - with package: root package (com.foo.Bar -> com)
+            if (exposePath.length == 0) etsExports.push(name);
+            else {
+                var ns = exposePath[0];
+                if (etsExports.indexOf(ns) < 0) etsExports.push(ns);
+            }
+        }
+    }
+
+    function addTypeExportRef(exposePath:Array<String>, name:String) {
+        if (Generator.GEN_TYPES_DTS) {
+            // this will be imported by the d.ts
+            // - no package: type name
+            // - with package: root package (com.foo.Bar -> com)
+            if (exposePath.length == 0) itsExports.push(name);
+            else {
+                var ns = exposePath[0];
+                if (itsExports.indexOf(ns) < 0) itsExports.push(ns);
+            }
+        }
+    }
+
     function generateClassDeclaration(cl:ClassType, isExport:Bool):String {
         var exposePath = getExposePath(cl.meta);
         if (exposePath == null)
@@ -141,6 +176,10 @@ class CodeGen {
                 for (field in fields)
                     if (field.isPublic || isPropertyGetterSetter(fields, field))
                         addField(field, true, isInterface, indent, parts);
+            }
+
+            if (isInterface && isExport) {
+                addTypeExportRef(exposePath, name);
             }
 
             parts.push('$indent}');
@@ -212,16 +251,7 @@ class CodeGen {
                 if (added == 0) return ""; // empty enum
             }
 
-            if (Generator.GEN_ENUM_TS && isExport) {
-                // this will be imported by the d.ts
-                // - no package: enum name
-                // - with package: root package (com.foo.Bar -> com)
-                if (exposePath.length == 0) etsExports.push(name);
-                else {
-                    var ns = exposePath[0];
-                    if (etsExports.indexOf(ns) < 0) etsExports.push(ns);
-                }
-            }
+            if (isExport) addEnumExportRef(exposePath, name);
 
             parts.push('$indent}');
             return parts.join("\n");
@@ -250,6 +280,8 @@ class CodeGen {
                     if (field.isPublic)
                         addField(field, false, true, indent, parts);
             }
+
+            if (isExport) addTypeExportRef(exposePath, name);
 
             parts.push('$indent}');
             return parts.join("\n");

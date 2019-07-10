@@ -25,13 +25,7 @@ interface E extends D {}
 
 ----
 
-export interface D {
-	testD(): void;
-}
-
-export interface C {
-	testC(): void;
-}
+import { D, C, E } from "./inheritance-types-types";
 
 export class B {
 	constructor();
@@ -42,6 +36,18 @@ export class A extends B implements D, C {
 	constructor();
 	testC(): void;
 	testD(): void;
+}
+
+----
+
+----
+
+export interface D {
+	testD(): void;
+}
+
+export interface C {
+	testC(): void;
 }
 
 export interface E extends D {

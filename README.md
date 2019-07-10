@@ -19,13 +19,33 @@ Just compile your Haxe library to a JS module and use it in TypeScript in a perf
 
 ## Usage
 
-Just add `-lib hxtsdgen` to compiler arguments and it'll do the rest.
+Just add `-lib hxtsdgen` to compiler arguments and a `.d.ts` file will be produced along the normal JS output.
 
-Options:
+## Options
 
-- Generate concrete enums file (see below): `-D hxtsdgen_enums_ts`
-- Custom file header:
-  `--macro hxtsdgen.Generator.setHeader('/* tslint:disable */')`
+### Concrete enums export
+
+Using compiler option `-D hxtsdgen_enums_ts`, the library will produce an extra `output-enums.ts`
+with concrete TypeScript enums from Haxe Abstract Enums (see "Limitations").
+
+### Separate types export
+
+Using compiler option `-D hxtsdgen_types_ts`, the library will produce an extra `output-types.d.ts`
+with all the interfaces and typedefs separated from the classes & functions declarations.
+
+### Custom output header
+
+By default, generated files include a comment warning that the file is generated.
+
+Using compiler option `-D hxtsdgen_skip_header`, no header will be included.
+
+But it's often necessary to add a custom header, for instance to disable linting.
+It can be achieved by adding the following compiler macro:
+
+```
+--macro hxtsdgen.Generator.setHeader('/* tslint:disable */')
+```
+
 
 ## Supported Haxe features
 
@@ -44,6 +64,50 @@ to TypeScript.
 - [x] Abstract enums as concrete `.ts` enums (`-D hxtsdgen_enums_ts`)
 - [ ] Option to generate "fat enums" from Abstract enums?
 - [ ] More general [abstracts](https://haxe.org/manual/types-abstract.html) (unlikely, excepted possibly for return values)
+
+### Haxe packages
+
+Exporting packages isn't very idiomatic to JS but supported:
+
+```haxe
+// com/foo/Thing.hx -> thing.js
+package com.foo;
+
+@:expose
+class Thing {...}
+```
+
+Can be (awkwardly) imported as:
+
+```typescript
+import * as things from './thing';
+const thing = new things.com.foo.Thing();
+// or
+import { com } from './thing';
+const thing = new com.foo.Thing();
+```
+
+*Warning: currently however it isn't supported to use both
+`-D hxtsdgen_enums_ts` and `-D hxtsdgen_types_ts` with both enums and types
+sharing the same root package name, as the generator isn't smart enough.*
+
+**To avoid that**, you can use `@:expose('FriendlyName')`, which will export
+module-level declarations:
+
+```haxe
+// com/foo/Thing.hx -> thing.js
+package com.foo;
+
+@:expose('Thing')
+class Thing {...}
+```
+
+Can be (nicely) imported as:
+
+```typescript
+import { Thing } from './thing';
+const thing = new Thing();
+```
 
 ### Limitations
 
@@ -81,6 +145,7 @@ Enums could be somehow supported, but currently the compiler doesn't allow expos
 Haxe JS doesn't generate native properties in any language - they are always transformed
 into `get_prop/set_prop` functions. It is possible that in the future the Haxe compiler
 will allow exporting native properties.
+
 
 ## How does it look?
 
