@@ -26,6 +26,10 @@ class Generator {
         Context.onGenerate(new Generator().onGenerate);
     }
 
+    static function setHeader(header:String) {
+        HEADER = header;
+    }
+
     var outName:String;
     var outDTS:String;
     var outETS:String;

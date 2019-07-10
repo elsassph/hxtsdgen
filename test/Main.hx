@@ -4,8 +4,9 @@ import sys.FileSystem;
 import sys.io.File;
 using StringTools;
 
+@:expose
 class Main {
-    static function main() {
+    static public function main() {
         var programDir = haxe.io.Path.directory(Sys.programPath());
         var total = 0, failed = 0;
 
