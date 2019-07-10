@@ -21,6 +21,12 @@ Just compile your Haxe library to a JS module and use it in TypeScript in a perf
 
 Just add `-lib hxtsdgen` to compiler arguments and it'll do the rest.
 
+Options:
+
+- Generate concrete enums file (see below): `-D hxtsdgen_enums_ts`
+- Custom file header:
+  `--macro hxtsdgen.Generator.setHeader('/* tslint:disable */')`
+
 ## Supported Haxe features
 
 Certain Haxe features are compiler abstractions and thus may not be possible to translate
