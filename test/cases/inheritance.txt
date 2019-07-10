@@ -1,0 +1,49 @@
+interface C {
+	function testC():Void;
+}
+
+interface D {
+	function testD():Void;
+}
+
+class B {
+	public function new() {}
+	public function testB():Void {}
+}
+
+@:expose
+class A extends B implements C implements D {
+	public function new() {
+		super();
+	}
+	public function testC() {};
+	public function testD() {};
+}
+
+@:expose
+interface E extends D {}
+
+----
+
+
+export interface D {
+	testD(): void;
+}
+
+export interface C {
+	testC(): void;
+}
+
+export class B {
+	constructor();
+	testB(): void;
+}
+
+export class A extends B implements D, C {
+	constructor();
+	testC(): void;
+	testD(): void;
+}
+
+export interface E extends D {
+}
