@@ -47,7 +47,7 @@ class TypeRenderer {
 
                     default:
                         // TODO: do we want to handle more `type Name = Underlying` cases?
-                        if (Generator.GEN_ENUM_TS || ab.meta.has(":expose") || ctx.ensureIncluded(t)) formatName(ctx, ab, params);
+                        if (ab.meta.has(":expose") || ctx.ensureIncluded(t)) formatName(ctx, ab, params);
                         else renderType(ctx, ab.type.applyTypeParameters(ab.params, params), paren);
                 }
 

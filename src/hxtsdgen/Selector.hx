@@ -26,8 +26,9 @@ class Selector {
                     }
                 case [_, TInst(_.get() => cl, _)]:
                     if (cl.meta.has(':enum')) {
-                        if (Generator.GEN_ENUM_TS || cl.meta.has(":expose"))
+                        if (cl.meta.has(":expose")) {
                             exposed.push(EEnum(cl));
+                        }
                     } else {
                         exposeClass(cl);
                     }

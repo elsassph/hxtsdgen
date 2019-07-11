@@ -3,6 +3,10 @@ interface A {
 	function f1(p: G): H;
 }
 
+interface B {
+	function f(p: js.html.ResponseType): Void;
+}
+
 @:enum abstract G(Int) {
 	var G1 = 1;
 	var G2 = 2;
