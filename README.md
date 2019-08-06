@@ -49,13 +49,13 @@ to TypeScript.
 
 #### No automatic export
 
-Currently all the types have to be explictly exposed; types used by functions won't be
+Currently all the types have to be explicitly exposed; types used by functions won't be
 automatically exported so everything must be currently annotated for export.
 
 #### Abstract enums
 
 `hxtsdgen` can generate TypeScript [const enums](https://www.typescriptlang.org/docs/handbook/enums.html),
-which are a pure compiler construction, substitued at compile time with their value.
+which are a pure compiler construction, substituted at compile time with their value.
 
 However `.ts` code can be compiled by 2 compilers: TypeScript and Babel.
 

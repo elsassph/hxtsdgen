@@ -6,6 +6,6 @@
     "contributors": ["elsassph", "nadako"],
     "version": "0.2.0",
     "releasenote": "Initial release",
-    "tags": ["js", "extern"],
+    "tags": ["js", "extern", "JavaScript", "TypeScript"],
     "classPath": "src"
 }
