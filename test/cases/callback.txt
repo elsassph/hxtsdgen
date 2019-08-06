@@ -13,7 +13,7 @@ class C {
 ----
 
 export class C {
-	private constructor();
+	protected constructor();
 	static f(cb: () => void): void;
 	static f2(cb: (arg0: string, arg1?: number) => number): void;
 	static f3(cb: (arg0: string, arg1: number, arg2: string) => void): void;

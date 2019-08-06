@@ -320,13 +320,13 @@ class CodeGen {
                 parts.push(renderDoc(ctor.doc, indent));
             switch (ctor.type) {
                 case TFun(args, _):
-                    var prefix = if (ctor.isPublic) "" else "private "; // TODO: should this really be protected?
+                    var prefix = if (ctor.isPublic) "" else "protected ";
                     parts.push('${indent}${prefix}constructor(${renderArgs(selector, args)});');
                 default:
                     throw "wtf";
             }
         } else if (!isInterface) {
-            parts.push('${indent}private constructor();');
+            parts.push('${indent}protected constructor();');
         }
     }
 

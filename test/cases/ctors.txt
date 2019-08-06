@@ -16,11 +16,11 @@ class E {
 
 
 export class C {
-	private constructor();
+	protected constructor();
 }
 
 export class D {
-	private constructor(v: number);
+	protected constructor(v: number);
 }
 
 export class E {

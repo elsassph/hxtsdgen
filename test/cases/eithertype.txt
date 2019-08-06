@@ -8,7 +8,7 @@ import haxe.extern.EitherType as Or;
 ----
 
 export class C {
-	private constructor();
+	protected constructor();
 	v1: number | string;
 	v2: number | string | boolean;
 }

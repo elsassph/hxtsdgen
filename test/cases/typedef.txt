@@ -61,12 +61,12 @@ export type Z = {
 }
 
 export class A {
-	private constructor();
+	protected constructor();
 	f(): X;
 }
 
 export class B {
-	private constructor();
+	protected constructor();
 	f(): Y2;
 }
 

@@ -75,7 +75,7 @@ export class C {
  * This label starts with a stupid asterisk
  */
 export class Asterisk {
-	private constructor();
+	protected constructor();
 }
 
 /**
