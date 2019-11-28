@@ -28,23 +28,25 @@ Just add `-lib hxtsdgen` to compiler arguments and a `.d.ts` file will be produc
 Using compiler option `-D hxtsdgen_enums_ts`, the library will produce an extra `output-enums.ts`
 with concrete TypeScript enums from Haxe Abstract Enums (see "Limitations").
 
+To change the enums' file name, use `-D hxtsggen_enums_ts=other_name` to produce `other_name.ts`.
+
 ### Separate types export
 
 Using compiler option `-D hxtsdgen_types_ts`, the library will produce an extra `output-types.d.ts`
 with all the interfaces and typedefs separated from the classes & functions declarations.
 
+To change the types' file name, use `-D hxtsggen_types_ts=other_name` to produce `other_name.d.ts`.
+
 ### Custom output header
 
 By default, generated files include a comment warning that the file is generated.
 
-Using compiler option `-D hxtsdgen_skip_header`, no header will be included.
+- Using compiler option `-D hxtsdgen_skip_header`, no header will be included.
 
-But it's often necessary to add a custom header, for instance to disable linting.
-It can be achieved by adding the following compiler macro:
-
-```
---macro hxtsdgen.Generator.setHeader('/* tslint:disable */')
-```
+- Header can be overriden by adding the following compiler macro to your build:
+    ```
+    --macro hxtsdgen.Generator.setHeader('/* tslint:disable */')
+    ```
 
 
 ## Supported Haxe features
@@ -67,35 +69,19 @@ to TypeScript.
 
 ### Haxe packages
 
-Exporting packages isn't very idiomatic to JS but supported:
+By default, Haxe packages are flattened.
 
-```haxe
-// com/foo/Thing.hx -> thing.js
-package com.foo;
-
-@:expose
-class Thing {...}
-```
-
-Can be (awkwardly) imported as:
+E.g. `com.foo.Thing` in Haxe can be imported as:
 
 ```typescript
-import * as things from './thing';
-const thing = new things.com.foo.Thing();
-// or
-import { com } from './thing';
-const thing = new com.foo.Thing();
+import { com_foo_Thing } from './thing';
+const thing = new com_foo_Thing();
 ```
 
-*Warning: currently however it isn't supported to use both
-`-D hxtsdgen_enums_ts` and `-D hxtsdgen_types_ts` with both enums and types
-sharing the same root package name, as the generator isn't smart enough.*
-
-**To avoid that**, you can use `@:expose('FriendlyName')`, which will export
+You can use `@:expose('FriendlyName')`, which will export
 module-level declarations:
 
 ```haxe
-// com/foo/Thing.hx -> thing.js
 package com.foo;
 
 @:expose('Thing')
@@ -108,6 +94,9 @@ Can be (nicely) imported as:
 import { Thing } from './thing';
 const thing = new Thing();
 ```
+
+To prevent flattening, set `-D hxtsdgen_namespaced`, but it doesn't play well with
+`hxtsdgen_enums_ts` and `hxtsdgen_types_ts`...
 
 ### Limitations
 

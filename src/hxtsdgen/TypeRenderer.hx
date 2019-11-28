@@ -94,10 +94,16 @@ class TypeRenderer {
         }
     }
 
-    static function formatName(ctx:Selector, t: { pack:Array<String>, name:String, meta:MetaAccess }, params:Array<Type>) {
+    static public function renderClass(ctx:Selector, cl:ClassType) {
+        return formatName(ctx, cl, cl.params.map(function(tp) return tp.t));
+    }
+
+    static public function formatName(ctx:Selector, t: { pack:Array<String>, name:String, meta:MetaAccess }, params:Array<Type>) {
         var exposePath = CodeGen.getExposePath(t.meta);
         if (exposePath == null) exposePath = t.pack.concat([t.name]);
-        var dotName = exposePath.join('.');
+        var dotName = exposePath.join(
+            #if hxtsdgen_namespaced '.' #else '_' #end
+        );
         // type parameters
         if (params.length > 0) {
             var genericParams = params.map(function(p) return renderType(ctx, p));

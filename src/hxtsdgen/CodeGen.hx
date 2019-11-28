@@ -6,6 +6,7 @@ import haxe.macro.Type;
 import hxtsdgen.Generator;
 import hxtsdgen.DocRenderer.renderDoc;
 import hxtsdgen.ArgsRenderer.renderArgs;
+import hxtsdgen.TypeRenderer.renderClass;
 import hxtsdgen.TypeRenderer.renderType;
 
 using haxe.macro.Tools;
@@ -77,11 +78,15 @@ class CodeGen {
     }
 
     static function wrapInNamespace(exposedPath:Array<String>, fn:String->String->String):String {
+        #if hxtsdgen_namespaced
         var name = exposedPath.pop();
         return if (exposedPath.length == 0)
             fn(name, "");
         else
             'export namespace ${exposedPath.join(".")} {\n${fn(name, "\t")}\n}';
+        #else
+        return fn(exposedPath.join('_'), '');
+        #end
     }
 
     function generateFunctionDeclaration(cl:ClassType, isExport:Bool, f:ClassField):String {
@@ -120,6 +125,7 @@ class CodeGen {
     function addEnumExportRef(exposePath:Array<String>, name:String) {
         if (Generator.GEN_ENUM_TS) {
             // this will be imported by the d.ts
+            #if hxtsdgen_namespaced
             // - no package: type name
             // - with package: root package (com.foo.Bar -> com)
             if (exposePath.length == 0) etsExports.push(name);
@@ -127,12 +133,16 @@ class CodeGen {
                 var ns = exposePath[0];
                 if (etsExports.indexOf(ns) < 0) etsExports.push(ns);
             }
+            #else
+            etsExports.push(name);
+            #end
         }
     }
 
     function addTypeExportRef(exposePath:Array<String>, name:String) {
         if (Generator.GEN_TYPES_DTS) {
             // this will be imported by the d.ts
+            #if hxtsdgen_namespaced
             // - no package: type name
             // - with package: root package (com.foo.Bar -> com)
             if (exposePath.length == 0) itsExports.push(name);
@@ -140,6 +150,9 @@ class CodeGen {
                 var ns = exposePath[0];
                 if (itsExports.indexOf(ns) < 0) itsExports.push(ns);
             }
+            #else
+            itsExports.push(name);
+            #end
         }
     }
 
@@ -203,13 +216,13 @@ class CodeGen {
         var ext = '';
         if (sup != null) {
             var cl = sup.t.get();
-            ext = ' extends ${cl.name}${renderTypeParams(cl.params)}';
+            ext = ' extends ${renderClass(selector, cl)}';
         }
         var ints = '';
         if (t.interfaces != null && t.interfaces.length > 0) {
             var names = t.interfaces.map(function (item) {
                 var cl = item.t.get();
-                return '${cl.name}${renderTypeParams(cl.params)}';
+                return '${renderClass(selector, cl)}';
             });
             if (t.isInterface) ints = ' extends ${names.join(', ')}';
             else ints = ' implements ${names.join(', ')}';
