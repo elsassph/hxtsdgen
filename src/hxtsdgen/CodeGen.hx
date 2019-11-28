@@ -181,6 +181,11 @@ class CodeGen {
                 if (!isInterface) generateConstructor(cl, isInterface, indent, parts);
 
                 var fields = cl.fields.get();
+                #if hxtsdgen_sort_fields
+                fields.sort(function(a, b) {
+                    return a.name == b.name ? 0 : a.name < b.name ? -1 : 1;
+                });
+                #end
                 for (field in fields)
                     if (field.isPublic || isPropertyGetterSetter(fields, field))
                         addField(field, false, isInterface, indent, parts);

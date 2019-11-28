@@ -11,22 +11,22 @@ class C {
     /**
         C.f doc
     **/
-    public var v:Int;
-
-    /**
-        C.sv doc
-    **/
-    public static var sv:Int;
-
-    /**
-        C.f doc
-    **/
     public function f() {}
+
+    /**
+        C.v doc
+    **/
+    public var v:Int;
 
     /**
         C.sf doc
     **/
     public static function sf() {}
+
+    /**
+        C.sv doc
+    **/
+    public static var sv:Int;
 }
 
 /**
@@ -56,19 +56,19 @@ export class C {
 	/**
 	 * C.f doc
 	 */
-	v: number;
-	/**
-	 * C.f doc
-	 */
 	f(): void;
 	/**
-	 * C.sv doc
+	 * C.v doc
 	 */
-	static sv: number;
+	v: number;
 	/**
 	 * C.sf doc
 	 */
 	static sf(): void;
+	/**
+	 * C.sv doc
+	 */
+	static sv: number;
 }
 
 /**

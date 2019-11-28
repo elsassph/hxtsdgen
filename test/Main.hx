@@ -79,6 +79,7 @@ class Main {
             "-js", outFile,
             "-D", "hxtsdgen_skip_header",
             "-D", "hxtsdgen_namespaced",
+            "-D", "hxtsdgen_sort_fields",
             '${pkg.dot}HxTsdGenTestCase'
         ];
         if (genEnums) args = args.concat(["-D", "hxtsdgen_enums_ts"]);
