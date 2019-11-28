@@ -26,11 +26,11 @@ export class C<A, B, C> {
 }
 
 export class D {
-	private constructor();
+	protected constructor();
 	load(): Promise<string>;
 }
 
 export class E<T> {
-	private constructor();
+	protected constructor();
 	load(): Promise<T>;
 }

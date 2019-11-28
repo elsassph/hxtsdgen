@@ -6,6 +6,7 @@ using StringTools;
 
 @:expose
 class Main {
+    static var failFast = false;
     static public function main() {
         var programDir = haxe.io.Path.directory(Sys.programPath());
         var total = 0, failed = 0;
@@ -20,6 +21,7 @@ class Main {
                 println("Haxe compilation failed!");
                 println("---");
                 failed++;
+                if(failFast) throw 'failFast is enabled so aborting test.';
             } else if (testCase.dts != tsOut.dts || testCase.ets != tsOut.ets) {
                 println("Output is different!");
                 println('Expected:\n[d.ts]\n${testCase.dts}');
@@ -28,6 +30,7 @@ class Main {
                 if (tsOut.ets != null) println('\n---\n[enums.ts]\n${tsOut.ets}');
                 failed++;
                 println("---");
+                if(failFast) throw 'failFast is enabled so aborting test.';
             }
         }
 

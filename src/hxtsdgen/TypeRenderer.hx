@@ -84,7 +84,13 @@ class TypeRenderer {
                 '{ [key: string]: ${renderType(ctx, elemT)} }';
 
             default:
-                throw 'Cannot render type ${t.toString()} into a TypeScript declaration (TODO?)';
+              var msg = 'Cannot render type ${t.toString()} into a TypeScript declaration (TODO?)';
+              if(Generator.THROW_ON_UNKNOWN)
+                throw msg;
+              else  {
+                haxe.macro.Context.warning(msg, haxe.macro.Context.currentPos());
+                return 'any';
+              }
         }
     }
 

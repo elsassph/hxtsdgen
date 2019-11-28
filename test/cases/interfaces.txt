@@ -41,6 +41,6 @@ export interface F {
 }
 
 export interface G {
-	set_field(value: string): string;
 	get_field(): string;
+	set_field(value: string): string;
 }

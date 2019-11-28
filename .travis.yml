@@ -9,8 +9,6 @@ haxe:
 
 install:
 - haxelib install hxnodejs
-- haxelib dev hxtsdgen .
 
 script:
-- haxe test.hxml
-- node test
+- sh scripts/test.sh

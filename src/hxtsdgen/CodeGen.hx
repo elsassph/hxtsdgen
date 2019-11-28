@@ -312,6 +312,9 @@ class CodeGen {
     }
 
     function generateConstructor(cl:ClassType, isInterface:Bool, indent:String, parts:Array<String>) {
+        // Heads up! constructors never declared as private since that will prevent inheritance in TS
+        // but haxe allows to extend a class even if it has a single explicitly private constructor. 
+        // Example: `class haxe.io.BytesInput extends haxe.io.InputExample`
         var privateCtor = true;
         if (cl.constructor != null) {
             var ctor = cl.constructor.get();
@@ -320,13 +323,13 @@ class CodeGen {
                 parts.push(renderDoc(ctor.doc, indent));
             switch (ctor.type) {
                 case TFun(args, _):
-                    var prefix = if (ctor.isPublic) "" else "private "; // TODO: should this really be protected?
+                    var prefix = if (ctor.isPublic) "" else "protected ";
                     parts.push('${indent}${prefix}constructor(${renderArgs(selector, args)});');
                 default:
-                    throw "wtf";
+                    throw 'Invalid constructor type ${ctor.type.toString()}';
             }
         } else if (!isInterface) {
-            parts.push('${indent}private constructor();');
+            parts.push('${indent}protected constructor();');
         }
     }
 

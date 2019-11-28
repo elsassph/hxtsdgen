@@ -14,7 +14,7 @@ class C {
 ----
 
 export class C {
-	private constructor();
+	protected constructor();
 	static int(): number;
 	static float(): number;
 	static string(): string;

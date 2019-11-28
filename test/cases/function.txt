@@ -9,7 +9,7 @@ class C {
 ----
 
 export class C {
-	private constructor();
+	protected constructor();
 	static f(): void;
 	static f2(a: string, b?: number): number;
 	static f3(a: string, b: number, c: string): void;

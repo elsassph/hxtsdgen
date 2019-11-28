@@ -1,6 +1,6 @@
 -cp test
+-cp src
 -main Main
 -lib hxnodejs
--lib hxtsdgen
 --macro hxtsdgen.Generator.setHeader('/* tslint:disable */')
 -js test/index.js

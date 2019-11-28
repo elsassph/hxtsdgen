@@ -70,63 +70,63 @@ class K {
 ----
 
 export class A {
-	private constructor();
+	protected constructor();
 	readonly field: string;
 }
 
 export class B {
-	private constructor();
+	protected constructor();
 	readonly field: string;
 }
 
 export class C {
-	private constructor();
+	protected constructor();
 	get_field(): string;
 }
 
 export class D {
-	private constructor();
+	protected constructor();
 	readonly field: string;
 	set_field(value: string): string;
 }
 
 export class E {
-	private constructor();
+	protected constructor();
 	readonly field: string;
 	set_field(v: string): string;
 }
 
 export class F {
-	private constructor();
+	protected constructor();
 	get_field(): string;
 	set_field(value: string): string;
 }
 
 export class G {
-	private constructor();
+	protected constructor();
 	get_field(): string;
 	set_field(value: string): string;
 }
 
 export class H {
-	private constructor();
+	protected constructor();
 	static readonly field: string;
 }
 
 export class I {
-	private constructor();
+	protected constructor();
 	static get_field(): string;
 	static set_field(value: string): string;
 }
 
 export class J<T> {
-	private constructor();
+	protected constructor();
 	readonly field: T;
 	set_field(value: T): T;
 }
 
 export class K {
-	private constructor();
+	protected constructor();
 	get_field(): string;
 	set_field(v: string): string;
 }

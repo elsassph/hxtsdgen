@@ -19,19 +19,19 @@ class H {
 ----
 
 export class B {
-	private constructor();
+	protected constructor();
 }
 
 export class E {
-	private constructor();
+	protected constructor();
 }
 
 export class H {
-	private constructor();
+	protected constructor();
 }
 
 export class G {
-	private constructor();
+	protected constructor();
 }
 
 export function i(a0: G, a1: HTMLHtmlElement): void;
