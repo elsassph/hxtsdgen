@@ -6,6 +6,7 @@ import haxe.macro.Type;
 import hxtsdgen.Generator;
 import hxtsdgen.DocRenderer.renderDoc;
 import hxtsdgen.ArgsRenderer.renderArgs;
+import hxtsdgen.TypeRenderer.renderClass;
 import hxtsdgen.TypeRenderer.renderType;
 
 using haxe.macro.Tools;
@@ -15,8 +16,10 @@ class CodeGen {
 
     var selector:Selector;
     var dtsDecl:Array<String>;
+    var itsDecl:Array<String>;
     var etsDecl:Array<String>;
     var etsExports:Array<String>;
+    var itsExports:Array<String>;
 
     public function new(selector:Selector) {
         this.selector = selector;
@@ -26,6 +29,8 @@ class CodeGen {
     public function generate() {
         dtsDecl = [];
         etsDecl = Generator.GEN_ENUM_TS ? [] : dtsDecl;
+        itsDecl = Generator.GEN_TYPES_DTS ? [] : dtsDecl;
+        itsExports = [];
         etsExports = [];
 
         generateSome(selector.exposed);
@@ -33,7 +38,9 @@ class CodeGen {
         return {
             dts: dtsDecl,
             ets: etsDecl,
-            exports: etsExports
+            its: itsDecl,
+            etsExports: etsExports,
+            itsExports: itsExports
         };
     }
 
@@ -41,12 +48,15 @@ class CodeGen {
         for (e in decl) {
             switch (e) {
                 case EClass(cl):
-                    dtsDecl.push(generateClassDeclaration(cl, true));
+                    if (cl.isInterface)
+                        itsDecl.push(generateClassDeclaration(cl, true));
+                    else
+                        dtsDecl.push(generateClassDeclaration(cl, true));
                 case EEnum(t):
                     var eDecl = generateEnumDeclaration(t, true);
                     if (eDecl != "") etsDecl.push(eDecl);
                 case ETypedef(t, anon):
-                    dtsDecl.push(generateTypedefDeclaration(t, anon, true));
+                    itsDecl.push(generateTypedefDeclaration(t, anon, true));
                 case EMethod(cl, f):
                     dtsDecl.push(generateFunctionDeclaration(cl, true, f));
             }
@@ -68,11 +78,15 @@ class CodeGen {
     }
 
     static function wrapInNamespace(exposedPath:Array<String>, fn:String->String->String):String {
+        #if hxtsdgen_namespaced
         var name = exposedPath.pop();
         return if (exposedPath.length == 0)
             fn(name, "");
         else
             'export namespace ${exposedPath.join(".")} {\n${fn(name, "\t")}\n}';
+        #else
+        return fn(exposedPath.join('_'), '');
+        #end
     }
 
     function generateFunctionDeclaration(cl:ClassType, isExport:Bool, f:ClassField):String {
@@ -108,6 +122,40 @@ class CodeGen {
             else "<" + params.map(function(t) return return t.name).join(", ") + ">";
     }
 
+    function addEnumExportRef(exposePath:Array<String>, name:String) {
+        if (Generator.GEN_ENUM_TS) {
+            // this will be imported by the d.ts
+            #if hxtsdgen_namespaced
+            // - no package: type name
+            // - with package: root package (com.foo.Bar -> com)
+            if (exposePath.length == 0) etsExports.push(name);
+            else {
+                var ns = exposePath[0];
+                if (etsExports.indexOf(ns) < 0) etsExports.push(ns);
+            }
+            #else
+            etsExports.push(name);
+            #end
+        }
+    }
+
+    function addTypeExportRef(exposePath:Array<String>, name:String) {
+        if (Generator.GEN_TYPES_DTS) {
+            // this will be imported by the d.ts
+            #if hxtsdgen_namespaced
+            // - no package: type name
+            // - with package: root package (com.foo.Bar -> com)
+            if (exposePath.length == 0) itsExports.push(name);
+            else {
+                var ns = exposePath[0];
+                if (itsExports.indexOf(ns) < 0) itsExports.push(ns);
+            }
+            #else
+            itsExports.push(name);
+            #end
+        }
+    }
+
     function generateClassDeclaration(cl:ClassType, isExport:Bool):String {
         var exposePath = getExposePath(cl.meta);
         if (exposePath == null)
@@ -133,6 +181,11 @@ class CodeGen {
                 if (!isInterface) generateConstructor(cl, isInterface, indent, parts);
 
                 var fields = cl.fields.get();
+                #if hxtsdgen_sort_fields
+                fields.sort(function(a, b) {
+                    return a.name == b.name ? 0 : a.name < b.name ? -1 : 1;
+                });
+                #end
                 for (field in fields)
                     if (field.isPublic || isPropertyGetterSetter(fields, field))
                         addField(field, false, isInterface, indent, parts);
@@ -141,6 +194,10 @@ class CodeGen {
                 for (field in fields)
                     if (field.isPublic || isPropertyGetterSetter(fields, field))
                         addField(field, true, isInterface, indent, parts);
+            }
+
+            if (isInterface && isExport) {
+                addTypeExportRef(exposePath, name);
             }
 
             parts.push('$indent}');
@@ -164,13 +221,13 @@ class CodeGen {
         var ext = '';
         if (sup != null) {
             var cl = sup.t.get();
-            ext = ' extends ${cl.name}${renderTypeParams(cl.params)}';
+            ext = ' extends ${renderClass(selector, cl)}';
         }
         var ints = '';
         if (t.interfaces != null && t.interfaces.length > 0) {
             var names = t.interfaces.map(function (item) {
                 var cl = item.t.get();
-                return '${cl.name}${renderTypeParams(cl.params)}';
+                return '${renderClass(selector, cl)}';
             });
             if (t.isInterface) ints = ' extends ${names.join(', ')}';
             else ints = ' implements ${names.join(', ')}';
@@ -212,16 +269,7 @@ class CodeGen {
                 if (added == 0) return ""; // empty enum
             }
 
-            if (Generator.GEN_ENUM_TS && isExport) {
-                // this will be imported by the d.ts
-                // - no package: enum name
-                // - with package: root package (com.foo.Bar -> com)
-                if (exposePath.length == 0) etsExports.push(name);
-                else {
-                    var ns = exposePath[0];
-                    if (etsExports.indexOf(ns) < 0) etsExports.push(ns);
-                }
-            }
+            if (isExport) addEnumExportRef(exposePath, name);
 
             parts.push('$indent}');
             return parts.join("\n");
@@ -250,6 +298,8 @@ class CodeGen {
                     if (field.isPublic)
                         addField(field, false, true, indent, parts);
             }
+
+            if (isExport) addTypeExportRef(exposePath, name);
 
             parts.push('$indent}');
             return parts.join("\n");
