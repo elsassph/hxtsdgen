@@ -25,7 +25,7 @@ class ArgsRenderer {
         for (i in 0...args.length) {
             var arg = args[i];
             var name = if (arg.name != "") arg.name else 'arg$i';
-            var opt = if (arg.opt && i > noOptionalUntil) "?" else "";
+            var opt = if (arg.opt && i >= noOptionalUntil) "?" else "";
             tsArgs.push('$name$opt: ${renderType(ctx, arg.t)}');
         }
         return tsArgs.join(", ");
