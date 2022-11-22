@@ -107,7 +107,11 @@ class TypeRenderer {
         // type parameters
         if (params.length > 0) {
             var genericParams = params.map(function(p) return renderType(ctx, p));
-            dotName += '<${genericParams.join(',')}>';
+            if(t.name == "Class"){
+                dotName = '${genericParams.join('')}';
+            } else {
+                dotName += '<${genericParams.join(',')}>';
+            }
         }
         return dotName;
     }
