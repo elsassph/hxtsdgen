@@ -85,6 +85,7 @@ class Selector {
                 }
                 return true;
             case [TAbstract(_.get() => ab, params), _] if (!ab.meta.has(":expose")):
+                if(ab.impl == null && ab.name == "Class") return true;
                 var cl = ab.impl.get();
                 if (cl.meta.has(':enum')) {
                     var key = cl.pack.join('.') + '.' + cl.name;
